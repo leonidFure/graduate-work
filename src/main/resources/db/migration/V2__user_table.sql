@@ -1,0 +1,1 @@
+ALTER TABLE usr DROP COLUMN birth_date;
