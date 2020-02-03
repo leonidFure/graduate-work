@@ -13,13 +13,12 @@ import java.util.*
 @RequestMapping("api/departments")
 class DepartmentController(private val departmentService: DepartmentService) {
 
-
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    @PreAuthorize("isAuthenticated()")
     fun getById(@RequestParam id: UUID) = ok(departmentService.getDepartmentById(id))
 
     @GetMapping("page")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    @PreAuthorize("isAuthenticated()")
     fun getPage(@RequestParam page: Int = 0,
                 @RequestParam size: Int = 10,
                 @RequestParam sort: Sort.Direction = Sort.Direction.ASC) =

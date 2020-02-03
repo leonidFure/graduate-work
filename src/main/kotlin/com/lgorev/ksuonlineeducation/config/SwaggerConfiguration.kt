@@ -41,12 +41,11 @@ class SwaggerConfiguration {
                 .build()
     }
 
-    fun defaultAuth(): List<SecurityReference?>? {
+    private fun defaultAuth(): List<SecurityReference?>? {
         val authorizationScope = AuthorizationScope("apiKey", "accessEverything")
         val authorizationScopes: Array<AuthorizationScope?> = arrayOfNulls(1)
         authorizationScopes[0] = authorizationScope
-        return listOf(
-                SecurityReference("apiKey", authorizationScopes))
+        return listOf(SecurityReference("apiKey", authorizationScopes))
     }
 }
 

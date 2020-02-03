@@ -13,11 +13,11 @@ import java.util.*
 @RequestMapping("api/groups")
 class GroupController(private val groupService: GroupService) {
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER') or hasAuthority('STUDENT')")
+    @PreAuthorize("isAuthenticated()")
     fun getById(@RequestParam id: UUID) = ok(groupService.getGroupById(id))
 
     @GetMapping("page")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER') or hasAuthority('STUDENT')")
+    @PreAuthorize("isAuthenticated()")
     fun getPage(@RequestParam page: Int = 0,
                 @RequestParam size: Int = 10,
                 @RequestParam sort: Sort.Direction = Sort.Direction.ASC) =

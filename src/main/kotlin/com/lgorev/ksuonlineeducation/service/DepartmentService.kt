@@ -22,9 +22,18 @@ class DepartmentService(private val departmentRepository: DepartmentRepository,
 
     @Throws(UniqueConstraintException::class)
     fun addDepartment(model: DepartmentRequestModel): DepartmentResponseModel {
-        departmentRepository.findByName(model.name)?.let {
-            throw UniqueConstraintException("Кафедра ${model.name} уже существует")
-        }
+        if (departmentRepository.existsByName(model.name))
+            throw UniqueConstraintException(message = "Кафедра ${model.name} уже существует")
+
+        if (!teacherRepository.existsById(model.managerId))
+            throw NotFoundException(message = "Преподаватель не найден")
+
+        if (departmentRepository.existsByManagerId(model.managerId))
+            throw UniqueConstraintException(message = "За данным преподавателем уже закремлена кафедра")
+
+        if (!facultyRepository.existsById(model.facultyId))
+            throw NotFoundException(message = "Факультет не найден")
+
         return departmentRepository.save(model.toEntity()).toModel()
     }
 
@@ -34,12 +43,19 @@ class DepartmentService(private val departmentRepository: DepartmentRepository,
             if (department.id != model.id)
                 throw UniqueConstraintException(message = "Кафедра ${model.name} уже существует")
         }
-        departmentRepository.findByIdOrNull(model.id)?.let { department ->
-            if (!teacherRepository.existsById(model.managerId))
-                throw NotFoundException(message = "Преподаватель не найден")
-            if (!facultyRepository.existsById(model.facultyId))
-                throw NotFoundException(message = "Факультет не найден")
 
+        if (!teacherRepository.existsById(model.managerId))
+            throw NotFoundException(message = "Преподаватель не найден")
+
+        departmentRepository.findByManagerId(model.managerId)?.let { dep ->
+            if (dep.id != model.id)
+                throw UniqueConstraintException(message = "За данным преподавателем уже закремлена кафедра")
+        }
+
+        if (!facultyRepository.existsById(model.facultyId))
+            throw NotFoundException(message = "Факультет не найден")
+
+        departmentRepository.findByIdOrNull(model.id)?.let { department ->
             department.name = model.name
             department.description = model.description
             department.managerId = model.managerId
@@ -61,7 +77,7 @@ class DepartmentService(private val departmentRepository: DepartmentRepository,
     fun deleteDepartment(id: UUID) = departmentRepository.deleteById(id)
 }
 
-fun DepartmentEntity.toModel() = DepartmentResponseModel(id, name, description, facultyId, manager.toModel())
+private fun DepartmentEntity.toModel() = DepartmentResponseModel(id, name, description, facultyId, manager.toModel())
 
 
 private fun DepartmentRequestModel.toEntity() = DepartmentEntity(id, name, description, facultyId, managerId)

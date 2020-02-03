@@ -10,5 +10,9 @@ import java.util.*
 interface UserGroupRepository : CrudRepository<UserGroupEntity, UserGroupId> {
 
     @Query("SELECT u FROM UserGroupEntity u WHERE u.userGroupId.userId = :id")
-    fun findByUserId(@Param("id") id: UUID): UserGroupEntity?
+    fun findByUserId(@Param("id") id: UUID): MutableSet<UserGroupEntity>
+
+    @Query("SELECT u FROM UserGroupEntity u WHERE u.userGroupId.groupId = :id")
+    fun findByGroupId(@Param("id") id: UUID): MutableSet<UserGroupEntity>
+
 }

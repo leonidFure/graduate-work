@@ -30,20 +30,22 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
     fun loadPage(pageable: Pageable) = userRepository.findAll(pageable).map { it.toModel() }
 
     @Throws(NotFoundException::class)
-    fun updateUser(model: UserRequestModel) {
+    fun updateUser(model: UserRequestModel): UserResponseModel {
         userRepository.findByIdOrNull(model.id)?.let { user ->
             user.firstName = model.firstName
             user.lastName = model.lastName
             user.patronymic = model.patronymic
             user.gender = model.gender
+            return user.toModel()
         }
         throw NotFoundException("Пользователь не найден")
     }
 
     @Throws(NotFoundException::class)
     fun setUserNotActive(id: UUID) {
-        userRepository.findByIdOrNull(id)?.let { user -> user.isActive = false }
-        throw NotFoundException("Пользователь не найден")
+        val user = userRepository.findByIdOrNull(id)
+        if (user != null) user.isActive = false
+        else throw NotFoundException("Пользователь не найден")
     }
 
     @Throws(AuthException::class)
@@ -52,6 +54,13 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
             user.password = BCrypt.hashpw(model.password, BCrypt.gensalt(12))
         }
         throw NotFoundException("Пользователь не найден")
+    }
+
+
+    fun getStudentPage(groupId: UUID) {
+        TODO("Измменить API пэйдинга (параментры заменить на модели)" +
+                "Набор стандратных полей: pageNum, pageSize, sortType, sortBy" +
+                "Конкретно для этого случая нужны дополнительные поля для фильтрации (groupId)")
     }
 }
 

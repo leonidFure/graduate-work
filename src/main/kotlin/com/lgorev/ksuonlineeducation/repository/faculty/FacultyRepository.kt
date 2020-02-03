@@ -7,4 +7,7 @@ import java.util.*
 @Repository
 interface FacultyRepository : PagingAndSortingRepository<FacultyEntity, UUID> {
     fun findByName(name: String): FacultyEntity?
+    fun existsByManagerId(managerId: UUID): Boolean
+    fun findByManagerId(managerId: UUID): FacultyEntity?
+    fun existsByName(name: String): Boolean
 }

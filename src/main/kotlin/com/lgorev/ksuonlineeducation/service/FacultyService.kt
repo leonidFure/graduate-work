@@ -20,25 +20,38 @@ class FacultyService(private val facultyRepository: FacultyRepository,
 
     @Throws(UniqueConstraintException::class)
     fun addFaculty(model: FacultyRequestModel): FacultyResponseModel {
-        facultyRepository.findByName(model.name)?.let {
+        if (facultyRepository.existsByName(model.name))
             throw UniqueConstraintException(message = "Факультет ${model.name} уже существует")
-        }
+
+        if (!teacherRepository.existsById(model.managerId))
+            throw NotFoundException("Преподаватель не найден")
+
+        if (facultyRepository.existsByManagerId(model.managerId))
+            throw UniqueConstraintException(message = "За данным преподавателем уже закреплен факультет")
+
         return facultyRepository.save(model.toEntity()).toModel()
     }
 
     @Throws(UniqueConstraintException::class, NotFoundException::class)
     fun updateFaculty(model: FacultyRequestModel): FacultyResponseModel {
-        facultyRepository.findByName(model.name)?.let {faculty ->
+        facultyRepository.findByName(model.name)?.let { faculty ->
             if (faculty.id != model.id)
                 throw UniqueConstraintException(message = "Факультет ${model.name} уже существует")
         }
+
+        if (!teacherRepository.existsById(model.managerId))
+            throw NotFoundException(message = "Преподаватель не найден")
+
+        facultyRepository.findByManagerId(model.managerId)?.let { faculty ->
+            if (faculty.id != model.id)
+                throw UniqueConstraintException(message = "За данным преподавателем уже закремлен факультет")
+        }
+
         facultyRepository.findByIdOrNull(model.id)?.let { faculty ->
-            if(teacherRepository.existsById(model.managerId)) {
-                faculty.name = model.name
-                faculty.description = model.description
-                faculty.managerId = model.managerId
-                return faculty.toModel()
-            } else throw NotFoundException(message = "Преподаватель не найден")
+            faculty.name = model.name
+            faculty.description = model.description
+            faculty.managerId = model.managerId
+            return faculty.toModel()
         }
         throw NotFoundException(message = "Факультет не найден")
     }
@@ -57,7 +70,7 @@ class FacultyService(private val facultyRepository: FacultyRepository,
 
 }
 
-private fun FacultyEntity.toModel() = FacultyResponseModel(id, name, description, manager.toModel())
+private fun FacultyEntity.toModel() = FacultyResponseModel(id, name, description, manager?.toModel())
 
 private fun FacultyRequestModel.toEntity() = FacultyEntity(id, name, description, managerId)
 

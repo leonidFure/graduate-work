@@ -14,11 +14,11 @@ import java.util.*
 class TrainingDirectionController (private val trainingDirectionService: TrainingDirectionService) {
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    @PreAuthorize("isAuthenticated()")
     fun getById(@RequestParam id: UUID) = ok(trainingDirectionService.getTrainingDirectionById(id))
 
     @GetMapping("page")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    @PreAuthorize("isAuthenticated()")
     fun getPage(@RequestParam page: Int = 0,
                 @RequestParam size: Int = 10,
                 @RequestParam sort: Sort.Direction = Sort.Direction.ASC) =

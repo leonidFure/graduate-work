@@ -41,8 +41,8 @@ data class UserEntity(
 
 ) {
     @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    @JoinColumn(name = "id", referencedColumnName = "user_id", insertable = false, updatable = false)
-    val teacher: TeacherEntity? = null
+    @JoinColumn(name = "id", referencedColumnName = "user_id")
+    var teacher: TeacherEntity? = null
 
     @OneToOne(mappedBy = "manager", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     lateinit var faculty: FacultyEntity

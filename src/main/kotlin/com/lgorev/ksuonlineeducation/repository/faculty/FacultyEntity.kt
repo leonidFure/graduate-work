@@ -20,5 +20,5 @@ data class FacultyEntity(
 ) {
         @OneToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "manager_id", referencedColumnName = "id", insertable = false, updatable = false)
-        lateinit var manager: UserEntity
+        val manager: UserEntity? = null
 }

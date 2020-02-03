@@ -3,9 +3,11 @@ package com.lgorev.ksuonlineeducation.service
 import com.lgorev.ksuonlineeducation.exception.LoginException
 import com.lgorev.ksuonlineeducation.domain.common.TokenResponseModel
 import com.lgorev.ksuonlineeducation.domain.user.Role
+import com.lgorev.ksuonlineeducation.domain.user.TeacherRequestModel
 import com.lgorev.ksuonlineeducation.domain.user.UserLoginModel
 import com.lgorev.ksuonlineeducation.domain.user.UserRequestModel
 import com.lgorev.ksuonlineeducation.exception.AuthException
+import com.lgorev.ksuonlineeducation.repository.teacher.TeacherEntity
 import com.lgorev.ksuonlineeducation.repository.user.UserRepository
 import com.lgorev.ksuonlineeducation.repository.user.UserEntity
 import com.lgorev.ksuonlineeducation.repository.user.UserRoleEntity
@@ -16,11 +18,13 @@ import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import org.springframework.security.crypto.bcrypt.BCrypt
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
 @Service
+@Transactional
 class AuthService(private val userRepository: UserRepository,
                   private val userService: UserService) {
 
@@ -43,7 +47,17 @@ class AuthService(private val userRepository: UserRepository,
         userRepository.findByEmail(model.email)?.let {
             throw LoginException("Пользователь с логином \"${model.email}\" уже существует")
         }
-        userRepository.save(model.asUserEntity())
+        userRepository.save(model.toUserEntity())
+    }
+
+
+    @Throws(LoginException::class)
+    fun register(model: TeacherRequestModel) {
+        userRepository.findByEmail(model.email)?.let {
+            throw LoginException("Пользователь с логином \"${model.email}\" уже существует")
+        }
+        val user = userRepository.save(model.toUserEntity())
+        user.teacher = TeacherEntity(user.id, model.startWorkDate, model.info)
     }
 
     private fun generateToken(userId: UUID, email: String, role: MutableList<Role>): String? {
@@ -61,7 +75,7 @@ class AuthService(private val userRepository: UserRepository,
     }
 }
 
-private fun UserRequestModel.asUserEntity(): UserEntity {
+private fun UserRequestModel.toUserEntity(): UserEntity {
     val userId = UUID.randomUUID()
     return UserEntity(
             userId,
@@ -74,6 +88,22 @@ private fun UserRequestModel.asUserEntity(): UserEntity {
             true,
             LocalDate.now(),
             roles.map { UserRoleEntity(UserRoleId(userId, it)) }.toMutableSet()
+    )
+}
+
+private fun TeacherRequestModel.toUserEntity(): UserEntity {
+    val userId = UUID.randomUUID()
+    return UserEntity(
+            userId,
+            firstName,
+            lastName,
+            patronymic,
+            gender,
+            email,
+            BCrypt.hashpw(password, BCrypt.gensalt(12)),
+            true,
+            LocalDate.now(),
+            mutableSetOf(UserRoleEntity(UserRoleId(userId, Role.TEACHER)))
     )
 }
 

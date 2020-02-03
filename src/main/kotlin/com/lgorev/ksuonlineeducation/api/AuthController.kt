@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.api
 
+import com.lgorev.ksuonlineeducation.domain.user.TeacherRequestModel
 import com.lgorev.ksuonlineeducation.domain.user.UserLoginModel
 import com.lgorev.ksuonlineeducation.domain.user.UserRequestModel
 import com.lgorev.ksuonlineeducation.service.AuthService
@@ -18,5 +19,9 @@ class AuthController(private val authService: AuthService) {
     @PermitAll
     @PostMapping("register")
     fun register(@RequestBody model: UserRequestModel) = ok(authService.register(model))
+
+    @PermitAll
+    @PostMapping("register/teacher")
+    fun registerTeacher(@RequestBody model: TeacherRequestModel) = ok(authService.register(model))
 
 }
