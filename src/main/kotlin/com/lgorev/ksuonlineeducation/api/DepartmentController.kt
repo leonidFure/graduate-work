@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.api
 
+import com.lgorev.ksuonlineeducation.domain.departments.DepartmentPageRequestModel
 import com.lgorev.ksuonlineeducation.domain.departments.DepartmentRequestModel
 import com.lgorev.ksuonlineeducation.service.DepartmentService
 import org.springframework.data.domain.PageRequest
@@ -17,12 +18,10 @@ class DepartmentController(private val departmentService: DepartmentService) {
     @PreAuthorize("isAuthenticated()")
     fun getById(@RequestParam id: UUID) = ok(departmentService.getDepartmentById(id))
 
-    @GetMapping("page")
+    @PostMapping("page")
     @PreAuthorize("isAuthenticated()")
-    fun getPage(@RequestParam page: Int = 0,
-                @RequestParam size: Int = 10,
-                @RequestParam sort: Sort.Direction = Sort.Direction.ASC) =
-            ok(departmentService.getDepartmentPage(PageRequest.of(page, size, sort, "id")))
+    fun getPage(@RequestBody model: DepartmentPageRequestModel) =
+            ok(departmentService.getDepartmentPage(model))
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")

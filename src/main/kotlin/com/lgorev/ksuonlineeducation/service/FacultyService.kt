@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.domain.faculty.FacultyPageRequestModel
 import com.lgorev.ksuonlineeducation.domain.faculty.FacultyResponseModel
 import com.lgorev.ksuonlineeducation.domain.faculty.FacultyRequestModel
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
@@ -7,7 +8,8 @@ import com.lgorev.ksuonlineeducation.exception.UniqueConstraintException
 import com.lgorev.ksuonlineeducation.repository.faculty.FacultyEntity
 import com.lgorev.ksuonlineeducation.repository.faculty.FacultyRepository
 import com.lgorev.ksuonlineeducation.repository.teacher.TeacherRepository
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -44,7 +46,7 @@ class FacultyService(private val facultyRepository: FacultyRepository,
 
         facultyRepository.findByManagerId(model.managerId)?.let { faculty ->
             if (faculty.id != model.id)
-                throw UniqueConstraintException(message = "За данным преподавателем уже закремлен факультет")
+                throw UniqueConstraintException(message = "За данным преподавателем уже закреплен факультет")
         }
 
         facultyRepository.findByIdOrNull(model.id)?.let { faculty ->
@@ -64,7 +66,14 @@ class FacultyService(private val facultyRepository: FacultyRepository,
         throw NotFoundException("Факультет не найден")
     }
 
-    fun getFacultyPage(pageable: Pageable) = facultyRepository.findAll(pageable).map { it.toModel() }
+    fun getFacultyPage(model: FacultyPageRequestModel): Page<FacultyResponseModel> {
+        val pageable = PageRequest.of(model.pageNum, model.pageSize, model.sortType, model.sortField)
+        return if (model.nameFilter != null)
+            facultyRepository.findAllByNameContainingIgnoreCase(pageable, model.nameFilter).map { it.toModel() }
+        else
+            facultyRepository.findAll(pageable).map { it.toModel() }
+
+    }
 
     fun deleteFaculty(id: UUID) = facultyRepository.deleteById(id)
 

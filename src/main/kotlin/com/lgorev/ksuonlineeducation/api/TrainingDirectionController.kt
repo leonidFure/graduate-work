@@ -1,9 +1,8 @@
 package com.lgorev.ksuonlineeducation.api
 
+import com.lgorev.ksuonlineeducation.domain.trainingdirection.TrainingDirectionPageRequestModel
 import com.lgorev.ksuonlineeducation.domain.trainingdirection.TrainingDirectionRequestModel
 import com.lgorev.ksuonlineeducation.service.TrainingDirectionService
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity.*
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -17,12 +16,10 @@ class TrainingDirectionController (private val trainingDirectionService: Trainin
     @PreAuthorize("isAuthenticated()")
     fun getById(@RequestParam id: UUID) = ok(trainingDirectionService.getTrainingDirectionById(id))
 
-    @GetMapping("page")
+    @PostMapping("page")
     @PreAuthorize("isAuthenticated()")
-    fun getPage(@RequestParam page: Int = 0,
-                @RequestParam size: Int = 10,
-                @RequestParam sort: Sort.Direction = Sort.Direction.ASC) =
-            ok(trainingDirectionService.getTrainingDirectionPage(PageRequest.of(page, size, sort, "id")))
+    fun getPage(@RequestBody model: TrainingDirectionPageRequestModel) =
+            ok(trainingDirectionService.getTrainingDirectionPage(model))
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")

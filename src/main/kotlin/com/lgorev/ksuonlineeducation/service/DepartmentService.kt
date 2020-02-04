@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.domain.departments.DepartmentPageRequestModel
 import com.lgorev.ksuonlineeducation.domain.departments.DepartmentResponseModel
 import com.lgorev.ksuonlineeducation.domain.departments.DepartmentRequestModel
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
@@ -8,7 +9,8 @@ import com.lgorev.ksuonlineeducation.repository.department.DepartmentEntity
 import com.lgorev.ksuonlineeducation.repository.department.DepartmentRepository
 import com.lgorev.ksuonlineeducation.repository.faculty.FacultyRepository
 import com.lgorev.ksuonlineeducation.repository.teacher.TeacherRepository
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -49,7 +51,7 @@ class DepartmentService(private val departmentRepository: DepartmentRepository,
 
         departmentRepository.findByManagerId(model.managerId)?.let { dep ->
             if (dep.id != model.id)
-                throw UniqueConstraintException(message = "За данным преподавателем уже закремлена кафедра")
+                throw UniqueConstraintException(message = "За данным преподавателем уже закреплена кафедра")
         }
 
         if (!facultyRepository.existsById(model.facultyId))
@@ -72,12 +74,18 @@ class DepartmentService(private val departmentRepository: DepartmentRepository,
         throw NotFoundException("Кафедра не найдена")
     }
 
-    fun getDepartmentPage(pageable: Pageable) = departmentRepository.findAll(pageable).map { it.toModel() }
+    fun getDepartmentPage(model: DepartmentPageRequestModel): Page<DepartmentResponseModel> {
+        val pageable = PageRequest.of(model.pageNum, model.pageSize, model.sortType, model.sortField)
+        return if(model.nameFilter != null)
+            departmentRepository.findAllByNameContainingIgnoreCase(pageable, model.nameFilter).map { it.toModel() }
+        else
+            departmentRepository.findAll(pageable).map { it.toModel() }
+    }
 
     fun deleteDepartment(id: UUID) = departmentRepository.deleteById(id)
 }
 
-private fun DepartmentEntity.toModel() = DepartmentResponseModel(id, name, description, facultyId, manager.toModel())
+private fun DepartmentEntity.toModel() = DepartmentResponseModel(id, name, description, facultyId, manager?.toModel())
 
 
 private fun DepartmentRequestModel.toEntity() = DepartmentEntity(id, name, description, facultyId, managerId)

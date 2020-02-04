@@ -64,13 +64,4 @@ class KsuOnlineEducationApplicationTests {
         }
     }
 
-    @Test
-    fun addNewFaculty() {
-    }
-
-    @Test
-    fun generateAdminUUID() {
-        userRepository.save(UserEntity(UUID(0L,0L), "Admin", "Admin", "Admin", Gender.MALE, "ksu-admin@gmail.com", BCrypt.hashpw("admin123", BCrypt.gensalt(12))))
-    }
-
 }

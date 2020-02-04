@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.api
 
+import com.lgorev.ksuonlineeducation.domain.faculty.FacultyPageRequestModel
 import com.lgorev.ksuonlineeducation.domain.faculty.FacultyRequestModel
 import com.lgorev.ksuonlineeducation.service.FacultyService
 import org.springframework.data.domain.PageRequest
@@ -17,12 +18,10 @@ class FacultyController(private val facultyService: FacultyService) {
     @PreAuthorize("isAuthenticated()")
     fun getById(@RequestParam id: UUID) = ok(facultyService.getFacultyById(id))
 
-    @GetMapping("page")
+    @PostMapping("page")
     @PreAuthorize("isAuthenticated()")
-    fun getPage(@RequestParam page: Int = 0,
-                @RequestParam size: Int = 10,
-                @RequestParam sort: Sort.Direction = Sort.Direction.ASC) =
-            ok(facultyService.getFacultyPage(PageRequest.of(page, size, sort, "id")))
+    fun getPage(@RequestBody model: FacultyPageRequestModel) =
+            ok(facultyService.getFacultyPage(model))
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")

@@ -10,5 +10,5 @@ data class DepartmentResponseModel(
         val name: String,
         val description: String,
         val facultyId: UUID,
-        val manager: UserResponseModel
+        val manager: UserResponseModel?
 )

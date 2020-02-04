@@ -56,12 +56,6 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
         throw NotFoundException("Пользователь не найден")
     }
 
-
-    fun getStudentPage(groupId: UUID) {
-        TODO("Измменить API пэйдинга (параментры заменить на модели)" +
-                "Набор стандратных полей: pageNum, pageSize, sortType, sortBy" +
-                "Конкретно для этого случая нужны дополнительные поля для фильтрации (groupId)")
-    }
 }
 
 
