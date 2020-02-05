@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.repository.subject
 
+import com.lgorev.ksuonlineeducation.domain.subject.SubjectType
 import java.util.*
 import javax.persistence.*
 
@@ -10,12 +11,11 @@ data class SubjectEntity(
         @Column(name = "id")
         val id: UUID = UUID.randomUUID(),
         @Column(name = "name")
-        val name: String,
+        var name: String,
         @Column(name = "description")
-        val description: String,
+        var description: String,
         @Column(name = "type")
         @Enumerated(value = EnumType.STRING)
-        val type: SubjectType
+        var type: SubjectType
 )
 
-enum class SubjectType { EXAM, OLYMPIAD }

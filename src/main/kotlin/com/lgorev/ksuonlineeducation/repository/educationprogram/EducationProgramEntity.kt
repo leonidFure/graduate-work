@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.repository.educationprogram
 
+import com.lgorev.ksuonlineeducation.domain.educationprogram.EducationProgramStatus
 import java.time.LocalDate
 import java.util.*
 import javax.persistence.*
@@ -27,4 +28,3 @@ data class EducationProgramEntity(
         var isActual: Boolean = true
 )
 
-enum class EducationProgramStatus { DRAFT, AWAITING_CONFIRMATION, CREATED }
