@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface SubjectRepository : PagingAndSortingRepository<SubjectEntity, UUID> {
+interface SubjectRepository : PagingAndSortingRepository<SubjectEntity, UUID>, SubjectPagingRepository {
     fun findAllByNameContainingIgnoreCase(pageable: Pageable, name: String): Page<SubjectEntity>
 }

@@ -34,14 +34,7 @@ class SubjectService(private val subjectRepository: SubjectRepository) {
         throw NotFoundException("Предмет не найден")
     }
 
-    fun getSubjectPage(model: SubjectRequestPageModel): Page<SubjectEntity> {
-        val pageable = PageRequest.of(model.pageNum, model.pageSize, model.sortType, model.sortField)
-
-        return if (model.nameFilter != null)
-            subjectRepository.findAllByNameContainingIgnoreCase(pageable, model.nameFilter)
-        else
-            subjectRepository.findAll(pageable)
-    }
+    fun getSubjectPage(model: SubjectRequestPageModel) = subjectRepository.findPage(model)
 
     fun deleteSubject(id: UUID) = subjectRepository.deleteById(id)
 }
