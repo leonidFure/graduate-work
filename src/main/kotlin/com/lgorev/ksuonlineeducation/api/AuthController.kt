@@ -24,4 +24,5 @@ class AuthController(private val authService: AuthService) {
     @PostMapping("register/teacher")
     fun registerTeacher(@RequestBody model: TeacherRequestModel) = ok(authService.register(model))
 
+//    TODO("Добавить Oauth 2.0, функционал выхода из системы, рефреша токена, авторизации с помощью ВК и Google")
 }
