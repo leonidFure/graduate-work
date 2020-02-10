@@ -6,5 +6,5 @@ data class TrainingDirectionRequestModel(
         val id: UUID = UUID.randomUUID(),
         val name: String,
         val description: String,
-        val departmentId: UUID
+        val facultyId: UUID
 )

@@ -1,0 +1,1 @@
+ALTER TABLE theme DROP CONSTRAINT theme_name_key;

@@ -1,6 +1,5 @@
 package com.lgorev.ksuonlineeducation.repository.trainingdirection
 
-import com.lgorev.ksuonlineeducation.repository.department.DepartmentEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.PagingAndSortingRepository

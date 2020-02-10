@@ -18,6 +18,7 @@ class FacultyController(private val facultyService: FacultyService) {
     @PreAuthorize("isAuthenticated()")
     fun getById(@RequestParam id: UUID) = ok(facultyService.getFacultyById(id))
 
+    /*Нужен ли тут пэйджинг*/
     @PostMapping("page")
     @PreAuthorize("isAuthenticated()")
     fun getPage(@RequestBody model: FacultyPageRequestModel) =

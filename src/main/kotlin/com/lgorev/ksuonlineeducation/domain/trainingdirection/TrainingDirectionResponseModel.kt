@@ -8,5 +8,5 @@ data class TrainingDirectionResponseModel(
         val id: UUID,
         val name: String,
         val description: String,
-        val departmentId: UUID
+        val facultyId: UUID
 )

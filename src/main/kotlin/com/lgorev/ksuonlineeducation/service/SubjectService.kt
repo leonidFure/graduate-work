@@ -6,8 +6,6 @@ import com.lgorev.ksuonlineeducation.domain.subject.SubjectResponseModel
 import com.lgorev.ksuonlineeducation.repository.subject.SubjectEntity
 import com.lgorev.ksuonlineeducation.repository.subject.SubjectRepository
 import javassist.NotFoundException
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.util.*
@@ -34,7 +32,8 @@ class SubjectService(private val subjectRepository: SubjectRepository) {
         throw NotFoundException("Предмет не найден")
     }
 
-    fun getSubjectPage(model: SubjectRequestPageModel) = subjectRepository.findPage(model)
+    fun getSubjectPage(model: SubjectRequestPageModel) =
+            subjectRepository.findPage(model).map { it.toModel() }
 
     fun deleteSubject(id: UUID) = subjectRepository.deleteById(id)
 }

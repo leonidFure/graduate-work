@@ -5,7 +5,7 @@ import com.lgorev.ksuonlineeducation.domain.trainingdirection.TrainingDirectionR
 import com.lgorev.ksuonlineeducation.domain.trainingdirection.TrainingDirectionResponseModel
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.exception.UniqueConstraintException
-import com.lgorev.ksuonlineeducation.repository.department.DepartmentRepository
+import com.lgorev.ksuonlineeducation.repository.faculty.FacultyRepository
 import com.lgorev.ksuonlineeducation.repository.trainingdirection.TrainingDirectionEntity
 import com.lgorev.ksuonlineeducation.repository.trainingdirection.TrainingDirectionRepository
 import org.springframework.data.domain.Page
@@ -18,15 +18,15 @@ import java.util.*
 @Service
 @Transactional
 class TrainingDirectionService(private val trainingDirectionRepository: TrainingDirectionRepository,
-                               private val departmentRepository: DepartmentRepository) {
+                               private val facultyRepository: FacultyRepository) {
 
     @Throws(UniqueConstraintException::class)
     fun addTrainingDirection(model: TrainingDirectionRequestModel): TrainingDirectionResponseModel {
         if(trainingDirectionRepository.existsByName(model.name))
             throw UniqueConstraintException(message = "Направление ${model.name} уже существует")
 
-        if (!departmentRepository.existsById(model.departmentId))
-            throw NotFoundException(message = "Кафедра не найдена")
+        if (!facultyRepository.existsById(model.facultyId))
+            throw NotFoundException(message = "Факультет не найден")
 
         return trainingDirectionRepository.save(model.toEntity()).toModel()
     }
@@ -38,12 +38,12 @@ class TrainingDirectionService(private val trainingDirectionRepository: Training
                 throw UniqueConstraintException(message = "Направление ${model.name} уже существует")
         }
         trainingDirectionRepository.findByIdOrNull(model.id)?.let { dir ->
-            if (departmentRepository.existsById(model.departmentId)) {
+            if (facultyRepository.existsById(model.facultyId)) {
                 dir.name = model.name
                 dir.description = model.description
-                dir.departmentId = model.departmentId
+                dir.departmentId = model.facultyId
                 return dir.toModel()
-            } else throw NotFoundException(message = "Кафедра не найдена")
+            } else throw NotFoundException(message = "Факультет не найден")
         }
         throw NotFoundException(message = "Направление не найдено")
     }
@@ -66,6 +66,6 @@ class TrainingDirectionService(private val trainingDirectionRepository: Training
     fun deleteTrainingDirection(id: UUID) = trainingDirectionRepository.deleteById(id)
 }
 
-private fun TrainingDirectionRequestModel.toEntity() = TrainingDirectionEntity(id, name, description, departmentId)
+private fun TrainingDirectionRequestModel.toEntity() = TrainingDirectionEntity(id, name, description, facultyId)
 
 private fun TrainingDirectionEntity.toModel() = TrainingDirectionResponseModel(id, name, description, departmentId)

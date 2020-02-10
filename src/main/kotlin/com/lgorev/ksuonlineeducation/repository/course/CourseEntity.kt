@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.repository.course
 
+import com.lgorev.ksuonlineeducation.domain.course.CourseStatus
 import java.time.LocalDate
 import java.util.*
 import javax.persistence.Column
@@ -27,4 +28,3 @@ data class CourseEntity(
         var isActual: Boolean = true
 )
 
-enum class CourseStatus { AWAIT_STUDENTS, IN_PROGRESS, DONE }
