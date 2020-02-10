@@ -1,6 +1,7 @@
 package com.lgorev.ksuonlineeducation.domain.subject
 
 import org.springframework.data.domain.Sort.Direction
+import java.util.*
 
 data class SubjectRequestPageModel(
         val pageNum: Int = 0,
@@ -8,5 +9,6 @@ data class SubjectRequestPageModel(
         val sortType: Direction = Direction.ASC,
         val sortField: String = "name",
         val nameFilter: String? = null,
-        val typeFilter: SubjectType? = null
+        val typeFilter: SubjectType? = null,
+        val trainingDirectionId: UUID? = null
 )

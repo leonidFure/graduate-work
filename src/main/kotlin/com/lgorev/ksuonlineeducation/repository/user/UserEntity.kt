@@ -1,7 +1,6 @@
 package com.lgorev.ksuonlineeducation.repository.user
 
 import com.lgorev.ksuonlineeducation.domain.user.Gender
-import com.lgorev.ksuonlineeducation.repository.department.DepartmentEntity
 import com.lgorev.ksuonlineeducation.repository.faculty.FacultyEntity
 import com.lgorev.ksuonlineeducation.repository.teacher.TeacherEntity
 import java.time.LocalDate
@@ -46,7 +45,4 @@ data class UserEntity(
 
     @OneToOne(mappedBy = "manager", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     lateinit var faculty: FacultyEntity
-
-    @OneToOne(mappedBy = "manager", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-    lateinit var department: DepartmentEntity
 }
