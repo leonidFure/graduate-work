@@ -1,6 +1,5 @@
 package com.lgorev.ksuonlineeducation.repository.user
 
-import com.lgorev.ksuonlineeducation.domain.user.Gender
 import com.lgorev.ksuonlineeducation.repository.faculty.FacultyEntity
 import com.lgorev.ksuonlineeducation.repository.teacher.TeacherEntity
 import java.time.LocalDate
@@ -19,9 +18,6 @@ data class UserEntity(
         var lastName: String = "",
         @Column(name = "patronymic")
         var patronymic: String? = null,
-        @Column(name = "gender", nullable = false)
-        @Enumerated(value = EnumType.STRING)
-        var gender: Gender = Gender.FEMALE,
         @Column(name = "email", unique = true, nullable = false)
         var email: String = "",
         @Column(name = "password", nullable = false)

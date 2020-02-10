@@ -35,7 +35,6 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
             user.firstName = model.firstName
             user.lastName = model.lastName
             user.patronymic = model.patronymic
-            user.gender = model.gender
             return user.toModel()
         }
         throw NotFoundException("Пользователь не найден")
@@ -59,8 +58,8 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
 }
 
 
-fun UserEntity.toModel() = UserResponseModel(id, firstName, lastName, patronymic, email, gender, roles.map { it.userRoleId.role }.toMutableSet(), teacher?.toModel())
+fun UserEntity.toModel() = UserResponseModel(id, firstName, lastName, patronymic, email, roles.map { it.userRoleId.role }.toMutableSet(), teacher?.toModel())
 
 private fun TeacherEntity.toModel() = TeacherModel(startWorkDate, info)
 
-private fun UserEntity.toUserModel() = UserModel(id, firstName, lastName, patronymic, email, gender, password, roles.map { it.userRoleId.role }.toMutableList())
+private fun UserEntity.toUserModel() = UserModel(id, firstName, lastName, patronymic, email, password, roles.map { it.userRoleId.role }.toMutableList())

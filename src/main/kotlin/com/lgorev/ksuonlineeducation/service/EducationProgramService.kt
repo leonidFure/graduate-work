@@ -40,9 +40,6 @@ class EducationProgramService(private val educationProgramRepository: EducationP
         if (educationProgramRepository.existsByName(model.name))
             throw UniqueConstraintException("Программа обучения ${model.name} уже существует")
 
-        if (!trainingDirectionRepository.existsById(model.directionID))
-            throw NotFoundException("Направление подготовки не найдено")
-
         if (!subjectRepository.existsById(model.subjectId))
             throw NotFoundException("Предмет не найден")
 
@@ -54,14 +51,11 @@ class EducationProgramService(private val educationProgramRepository: EducationP
         if (educationProgramRepository.existsByName(model.name))
             throw UniqueConstraintException("Программа обучения ${model.name} уже существует")
 
-        if (!trainingDirectionRepository.existsById(model.directionID))
-            throw NotFoundException("Направление подготовки не найдено")
-
         if (!subjectRepository.existsById(model.subjectId))
             throw NotFoundException("Предмет не найден")
 
         educationProgramRepository.findByIdOrNull(model.id)?.let { program ->
-            program.directionID = model.directionID
+            program.code = model.code
             program.subjectId = model.subjectId
             program.name = model.name
             program.description = model.description
@@ -76,7 +70,7 @@ class EducationProgramService(private val educationProgramRepository: EducationP
 }
 
 private fun EducationProgramEntity.toModel() =
-        EducationProgramResponseModel(id, directionID, subjectId, name, description, creationDate, status, isActual)
+        EducationProgramResponseModel(id, code, subjectId, name, description, creationDate, status, isActual)
 
 private fun EducationProgramRequestModel.toEntity() =
-        EducationProgramEntity(id, directionID, subjectId, name, description, creationDate, status)
+        EducationProgramEntity(id, subjectId, code, name, description, creationDate, status)

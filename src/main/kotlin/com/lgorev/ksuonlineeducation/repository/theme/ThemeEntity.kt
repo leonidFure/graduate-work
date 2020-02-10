@@ -14,6 +14,8 @@ data class ThemeEntity(
         val id: UUID = UUID.randomUUID(),
         @Column(name = "parent_theme_id")
         var parentThemeId: UUID?,
+        @Column(name = "number")
+        var number: Short,
         @Column(name = "education_program_id")
         var educationProgramId: UUID,
         @Column(name = "name")

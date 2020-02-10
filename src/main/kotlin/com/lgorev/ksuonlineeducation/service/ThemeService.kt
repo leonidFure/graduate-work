@@ -49,6 +49,7 @@ class ThemeService(private val themeRepository: ThemeRepository,
             throw NotFoundException("Прогрмма обучения не найдена")
 
         themeRepository.findByIdOrNull(model.id)?.let { theme ->
+            theme.number = model.number
             theme.name = model.name
             theme.description = model.description
             theme.parentThemeId = model.parentThemeId
@@ -61,5 +62,5 @@ class ThemeService(private val themeRepository: ThemeRepository,
     fun deleteTheme(id: UUID) = themeRepository.deleteById(id)
 }
 
-private fun ThemeEntity.toModel() = ThemeResponseModel(id, parentThemeId, educationProgramId, name, description)
-private fun ThemeRequestModel.toEntity() = ThemeEntity(id, parentThemeId, educationProgramId, name, description)
+private fun ThemeEntity.toModel() = ThemeResponseModel(id, parentThemeId, number, educationProgramId, name, description)
+private fun ThemeRequestModel.toEntity() = ThemeEntity(id, parentThemeId, number, educationProgramId, name, description)

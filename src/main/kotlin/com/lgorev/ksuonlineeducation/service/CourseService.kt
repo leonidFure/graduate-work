@@ -70,7 +70,7 @@ class CourseService(private val courseRepository: CourseRepository,
     }
 
     @Throws(NotFoundException::class, BadRequestException::class)
-    fun removeTeacherToCourse(courseId: UUID, teacherId: UUID) {
+    fun removeTeacherFromCourse(courseId: UUID, teacherId: UUID) {
         if(!courseRepository.existsById(courseId))
             throw NotFoundException("Курс не найден")
         if(!teachersRepository.existsById(teacherId))

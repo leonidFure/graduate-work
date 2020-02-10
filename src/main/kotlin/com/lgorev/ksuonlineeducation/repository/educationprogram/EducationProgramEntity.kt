@@ -11,10 +11,10 @@ data class EducationProgramEntity(
         @Id
         @Column(name = "id")
         val id: UUID = UUID.randomUUID(),
-        @Column(name = "direction_id")
-        var directionID: UUID,
         @Column(name = "subject_id")
         var subjectId: UUID,
+        @Column(name = "code")
+        var code: String,
         @Column(name = "name")
         var name: String,
         @Column(name = "description")

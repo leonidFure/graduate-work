@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.repository.trainingdirection
 
+import java.io.Serializable
 import java.util.*
 import javax.persistence.*
 
@@ -16,4 +17,4 @@ data class SubjectsForEntranceId(
         val trainingDirectionId: UUID,
         @Column(name = "subject_id")
         val subjectId: UUID
-)
+) : Serializable
