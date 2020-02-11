@@ -46,6 +46,7 @@ class CoursePagingRepositoryImpl(@PersistenceContext private val em: EntityManag
                     )
             )
         }
+
         cq.where(cb.and(*predicates.toTypedArray()))
         if (model.sortType == Sort.Direction.DESC)
             cq.orderBy(cb.desc(root.get<String>(model.sortField)))

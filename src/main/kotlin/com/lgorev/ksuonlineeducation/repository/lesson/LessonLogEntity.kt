@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.repository.lesson
 
+import com.lgorev.ksuonlineeducation.domain.lesson.LessonStatus
 import java.io.Serializable
 import java.time.LocalDateTime
 import java.util.*
@@ -16,7 +17,9 @@ data class LessonLogEntity(
         @Column(name = "datetime")
         val datetime: LocalDateTime,
         @Column(name = "old_status")
-        val oldStatus: LessonStatus,
+        @Enumerated(value = EnumType.STRING)
+        val oldStatus: LessonStatus?,
         @Column(name = "new_status")
-        val newStatus: LessonStatus
+        @Enumerated(value = EnumType.STRING)
+        val newStatus: LessonStatus?
 )

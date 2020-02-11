@@ -1,11 +1,9 @@
 package com.lgorev.ksuonlineeducation.repository.lesson
 
+import com.lgorev.ksuonlineeducation.domain.lesson.LessonStatus
 import java.time.LocalDate
 import java.util.*
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.Table
+import javax.persistence.*
 
 @Entity
 @Table(name = "lesson")
@@ -18,7 +16,7 @@ data class LessonEntity(
         @Column(name = "date")
         var date: LocalDate,
         @Column(name = "status")
+        @Enumerated(value = EnumType.STRING)
         var status: LessonStatus
 )
 
-enum class LessonStatus { CREATED, IN_PROGRESS, DONE }
