@@ -10,7 +10,7 @@ import java.util.*
 
 data class LessonRequestModel (
         val id: UUID = UUID.randomUUID(),
-        val courseId: UUID,
+        val timetableId: UUID,
         @JsonSerialize(using = LocalDateSerializer::class)
         @JsonDeserialize(using = LocalDateDeserializer::class)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

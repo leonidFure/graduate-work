@@ -11,8 +11,8 @@ data class LessonEntity(
         @Id
         @Column(name = "id")
         val id: UUID = UUID.randomUUID(),
-        @Column(name = "course_id")
-        var courseId: UUID,
+        @Column(name = "timetable_id")
+        var timetableId: UUID,
         @Column(name = "date")
         var date: LocalDate,
         @Column(name = "status")

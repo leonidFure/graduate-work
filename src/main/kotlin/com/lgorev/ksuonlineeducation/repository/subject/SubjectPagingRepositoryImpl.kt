@@ -27,9 +27,9 @@ class SubjectPagingRepositoryImpl(@PersistenceContext private val em: EntityMana
 
         cq.where(cb.and(*predicates.toTypedArray()))
         if (model.sortType == Sort.Direction.DESC)
-            cq.orderBy(cb.desc(root.get<String>(model.sortField)))
+            cq.orderBy(cb.desc(root.get<String>("name")))
         else
-            cq.orderBy(cb.asc(root.get<String>(model.sortField)))
+            cq.orderBy(cb.asc(root.get<String>("name")))
 
         val typedQuery = em.createQuery(cq)
         typedQuery.firstResult = (model.pageNum) * model.pageSize

@@ -2,7 +2,6 @@ package com.lgorev.ksuonlineeducation.repository.course
 
 import com.lgorev.ksuonlineeducation.domain.course.CourseRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.educationprogram.EducationProgramStatus
-import com.lgorev.ksuonlineeducation.repository.educationprogram.EducationProgramEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Sort
@@ -49,9 +48,9 @@ class CoursePagingRepositoryImpl(@PersistenceContext private val em: EntityManag
 
         cq.where(cb.and(*predicates.toTypedArray()))
         if (model.sortType == Sort.Direction.DESC)
-            cq.orderBy(cb.desc(root.get<String>(model.sortField)))
+            cq.orderBy(cb.desc(root.get<LocalDate>("startDate")))
         else
-            cq.orderBy(cb.asc(root.get<String>(model.sortField)))
+            cq.orderBy(cb.asc(root.get<LocalDate>("startDate")))
 
         val typedQuery = em.createQuery(cq)
         typedQuery.firstResult = (model.pageNum) * model.pageSize

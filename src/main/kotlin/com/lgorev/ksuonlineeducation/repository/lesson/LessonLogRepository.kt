@@ -5,4 +5,4 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface LessonLogRepository : PagingAndSortingRepository<LessonLogEntity, UUID>
+interface LessonLogRepository : PagingAndSortingRepository<LessonLogEntity, UUID>, LessonLogPagingRepository

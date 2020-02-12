@@ -9,8 +9,8 @@ data class LessonRequestPageModel(
         val pageSize: Int = 10,
         val sortType: Sort.Direction = Sort.Direction.ASC,
         val sortField: String = "date",
-        val courseId: UUID? = null,
+        val timetableId: UUID? = null,
         val fromDate: LocalDate? = null,
         val toDate: LocalDate? = null,
         val statusFilter: LessonStatus? = null
-        )
+)

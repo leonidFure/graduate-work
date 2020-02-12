@@ -28,8 +28,6 @@ class EducationProgramPagingRepositoryImpl(@PersistenceContext private val em: E
             predicates.add(cb.equal(root.get<Boolean>("isActual"), model.actualFilter))
         if (model.statusFilter != null)
             predicates.add(cb.equal(root.get<EducationProgramStatus>("status"), model.statusFilter))
-        if(model.directionId != null)
-            predicates.add(cb.equal(root.get<UUID>("directionId"), model.directionId))
         if(model.subjectId != null)
             predicates.add(cb.equal(root.get<UUID>("subjectId"), model.subjectId))
         if(model.creationDateFrom != null && model.creationDateTo != null)
@@ -37,9 +35,9 @@ class EducationProgramPagingRepositoryImpl(@PersistenceContext private val em: E
 
         cq.where(cb.and(*predicates.toTypedArray()))
         if (model.sortType == Sort.Direction.DESC)
-            cq.orderBy(cb.desc(root.get<String>(model.sortField)))
+            cq.orderBy(cb.desc(root.get<LocalDate>("creationDate")))
         else
-            cq.orderBy(cb.asc(root.get<String>(model.sortField)))
+            cq.orderBy(cb.asc(root.get<LocalDate>("creationDate")))
 
         val typedQuery = em.createQuery(cq)
         typedQuery.firstResult = (model.pageNum) * model.pageSize

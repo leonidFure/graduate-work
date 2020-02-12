@@ -14,7 +14,6 @@ data class CourseRequestPageModel(
         val pageNum: Int = 0,
         val pageSize: Int = 10,
         val sortType: Sort.Direction = Sort.Direction.ASC,
-        val sortField: String = "name",
         val statusFilter: CourseStatus? = null,
         val actualFilter: Boolean? = null,
         @JsonSerialize(using = LocalDateSerializer::class)

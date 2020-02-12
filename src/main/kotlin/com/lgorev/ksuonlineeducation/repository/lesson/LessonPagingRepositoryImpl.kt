@@ -2,7 +2,6 @@ package com.lgorev.ksuonlineeducation.repository.lesson
 
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonStatus
-import com.lgorev.ksuonlineeducation.repository.course.CourseEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Sort
@@ -23,8 +22,8 @@ class LessonPagingRepositoryImpl(@PersistenceContext private val em: EntityManag
         val root = cq.from(lesson)
 
         val predicates = mutableSetOf<Predicate>()
-        if (model.courseId != null)
-            predicates.add(cb.equal(root.get<UUID>("courseId"), model.courseId))
+        if (model.timetableId != null)
+            predicates.add(cb.equal(root.get<UUID>("courseId"), model.timetableId))
         if (model.fromDate != null && model.toDate != null)
             predicates.add(cb.between(root.get<LocalDate>("date"), model.fromDate, model.toDate))
         if (model.statusFilter != null)
