@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.repository.timetable
 
+import com.lgorev.ksuonlineeducation.domain.timetable.TimetableType
 import java.time.DayOfWeek
 import java.time.LocalTime
 import java.util.*
@@ -21,9 +22,9 @@ data class TimetableEntity(
         @Column(name = "end_time")
         var endTime: LocalTime,
         @Column(name = "type")
+        @Enumerated(value = EnumType.STRING)
         var type: TimetableType,
         @Column(name = "is_actual")
         var isActual: Boolean = true
 )
 
-enum class TimetableType { EVEN, ODD, EVERY_WEEK }

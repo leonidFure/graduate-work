@@ -22,8 +22,10 @@ class LessonPagingRepositoryImpl(@PersistenceContext private val em: EntityManag
         val root = cq.from(lesson)
 
         val predicates = mutableSetOf<Predicate>()
+        if (model.courseId != null)
+            predicates.add(cb.equal(root.get<UUID>("courseId"), model.courseId))
         if (model.timetableId != null)
-            predicates.add(cb.equal(root.get<UUID>("courseId"), model.timetableId))
+            predicates.add(cb.equal(root.get<UUID>("timetableId"), model.timetableId))
         if (model.fromDate != null && model.toDate != null)
             predicates.add(cb.between(root.get<LocalDate>("date"), model.fromDate, model.toDate))
         if (model.statusFilter != null)
@@ -31,9 +33,9 @@ class LessonPagingRepositoryImpl(@PersistenceContext private val em: EntityManag
         cq.where(cb.and(*predicates.toTypedArray()))
 
         if (model.sortType == Sort.Direction.DESC)
-            cq.orderBy(cb.desc(root.get<String>(model.sortField)))
+            cq.orderBy(cb.desc(root.get<String>("date")))
         else
-            cq.orderBy(cb.asc(root.get<String>(model.sortField)))
+            cq.orderBy(cb.asc(root.get<String>("date")))
 
         val typedQuery = em.createQuery(cq)
         typedQuery.firstResult = (model.pageNum) * model.pageSize

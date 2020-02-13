@@ -8,9 +8,11 @@ import com.lgorev.ksuonlineeducation.repository.subject.SubjectRepository
 import javassist.NotFoundException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
+@Transactional
 class SubjectService(private val subjectRepository: SubjectRepository) {
 
     fun addSubject(model: SubjectRequestModel) =

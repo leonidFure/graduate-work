@@ -10,6 +10,7 @@ import java.util.*
 
 data class LessonResponseModel(
         val id: UUID,
+        val courseId: UUID,
         val timetableId: UUID,
         @JsonSerialize(using = LocalDateSerializer::class)
         @JsonDeserialize(using = LocalDateDeserializer::class)
