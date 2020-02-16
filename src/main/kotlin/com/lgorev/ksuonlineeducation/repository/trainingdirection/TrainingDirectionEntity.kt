@@ -13,6 +13,6 @@ data class TrainingDirectionEntity(
         var name: String = "",
         @Column(name = "description")
         var description: String,
-        @Column(name = "department_id")
-        var departmentId: UUID
+        @Column(name = "faculty_id")
+        var facultyId: UUID
 )

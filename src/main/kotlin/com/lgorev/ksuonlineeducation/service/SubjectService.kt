@@ -3,9 +3,13 @@ package com.lgorev.ksuonlineeducation.service
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectResponseModel
+import com.lgorev.ksuonlineeducation.exception.UniqueConstraintException
 import com.lgorev.ksuonlineeducation.repository.subject.SubjectEntity
 import com.lgorev.ksuonlineeducation.repository.subject.SubjectRepository
+import com.lgorev.ksuonlineeducation.repository.trainingdirection.SubjectForEntranceRepository
+import com.lgorev.ksuonlineeducation.repository.trainingdirection.SubjectsForEntranceEntity
 import javassist.NotFoundException
+import org.springframework.data.domain.Page
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -13,12 +17,20 @@ import java.util.*
 
 @Service
 @Transactional
-class SubjectService(private val subjectRepository: SubjectRepository) {
+class SubjectService(private val subjectRepository: SubjectRepository,
+                     private val subjectForEntranceRepository: SubjectForEntranceRepository) {
 
-    fun addSubject(model: SubjectRequestModel) =
-            subjectRepository.save(model.toEntity()).toModel()
+    fun addSubject(model: SubjectRequestModel): SubjectResponseModel {
+        if (subjectRepository.existsByName(model.name))
+            throw UniqueConstraintException("Предмет \"${model.name}\" уже существует")
+        return subjectRepository.save(model.toEntity()).toModel()
+    }
 
     fun updateSubject(model: SubjectRequestModel): SubjectResponseModel {
+        subjectRepository.findByName(model.name)?.let { subject ->
+            if (subject.id != model.id)
+                throw UniqueConstraintException("Предмет \"${model.name}\" уже существует")
+        }
         subjectRepository.findByIdOrNull(model.id)?.let { subject ->
             subject.name = model.name
             subject.description = model.description
@@ -34,8 +46,10 @@ class SubjectService(private val subjectRepository: SubjectRepository) {
         throw NotFoundException("Предмет не найден")
     }
 
-    fun getSubjectPage(model: SubjectRequestPageModel) =
-            subjectRepository.findPage(model).map { it.toModel() }
+    fun getSubjectPage(model: SubjectRequestPageModel): Page<SubjectResponseModel> {
+        val subjectIds = subjectForEntranceRepository.findByDirectionIds(model.trainingDirectionIds)
+        return subjectRepository.findPage(model, subjectIds).map { it.toModel() }
+    }
 
     fun deleteSubject(id: UUID) = subjectRepository.deleteById(id)
 }
