@@ -21,6 +21,8 @@ class LessonLogService(private val lessonLogRepository: LessonLogRepository,
         return lessonLogRepository.save(model.toEntity()).toModel()
     }
 
+    fun addLessonsLog(logs: List<LessonLogEntity>) = lessonLogRepository.saveAll(logs)
+
     fun getLessonLogPage(model: LessonLogPageRequestModel) =
             lessonLogRepository.getPage(model).map { it.toModel() }
 }

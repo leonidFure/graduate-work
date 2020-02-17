@@ -1,12 +1,16 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.domain.course.CourseRequestModel
 import com.lgorev.ksuonlineeducation.domain.lesson.*
+import com.lgorev.ksuonlineeducation.domain.timetable.TimetableRequestModel
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.repository.course.CourseRepository
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonEntity
+import com.lgorev.ksuonlineeducation.repository.lesson.LessonLogEntity
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonRepository
 import com.lgorev.ksuonlineeducation.repository.timetable.TimetableRepository
+import com.lgorev.ksuonlineeducation.util.filter
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -62,6 +66,20 @@ class LessonService(private val lessonRepository: LessonRepository,
     }
 
     fun deleteLesson(id: UUID) = lessonRepository.deleteById(id)
+
+    fun addLessonsForCourse(model: CourseRequestModel) {
+        val lessons = mutableSetOf<LessonEntity>()
+        model.timetables.forEach { t ->
+            lessons.addAll(
+                    (model.startDate..model.endDate)
+                            .filter { day -> day.dayOfWeek == t.dayOfWeek }
+                            .map { day -> LessonEntity(UUID.randomUUID(), model.id, t.id, day, LessonStatus.CREATED) }
+            )
+        }
+        val lessonsLog = lessons.map { l -> LessonLogEntity(UUID.randomUUID(), l.id, LocalDateTime.now(), null, LessonStatus.CREATED) }
+        lessonLogService.addLessonsLog(lessonsLog)
+        lessonRepository.saveAll(lessons)
+    }
 }
 
 private fun LessonRequestModel.toEntity() = LessonEntity(id, courseId, timetableId, date, status)

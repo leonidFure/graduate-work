@@ -26,7 +26,7 @@ data class CourseRequestModel(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         val creationDate: LocalDate = LocalDate.now(),
         val isActual: Boolean = true,
-        val timetables: MutableSet<TimetableRequestModel> = mutableSetOf()
+        var timetables: MutableSet<TimetableRequestModel> = mutableSetOf()
 )
 
 enum class CourseStatus { AWAIT_STUDENTS, IN_PROGRESS, DONE }

@@ -3,6 +3,7 @@ package com.lgorev.ksuonlineeducation.service
 import com.lgorev.ksuonlineeducation.domain.course.CourseRequestModel
 import com.lgorev.ksuonlineeducation.domain.course.CourseRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.course.CourseResponseModel
+import com.lgorev.ksuonlineeducation.domain.timetable.TimetableRequestModel
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.repository.course.CourseEntity
@@ -11,6 +12,7 @@ import com.lgorev.ksuonlineeducation.repository.course.CoursesTeachersId
 import com.lgorev.ksuonlineeducation.repository.course.CoursesTeachersRepository
 import com.lgorev.ksuonlineeducation.repository.educationprogram.EducationProgramRepository
 import com.lgorev.ksuonlineeducation.repository.teacher.TeacherRepository
+import com.lgorev.ksuonlineeducation.repository.timetable.TimetableEntity
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,7 +24,8 @@ class CourseService(private val courseRepository: CourseRepository,
                     private val educationProgramRepository: EducationProgramRepository,
                     private val coursesTeachersRepository: CoursesTeachersRepository,
                     private val teachersRepository: TeacherRepository,
-                    private val timetableService: TimetableService) {
+                    private val timetableService: TimetableService,
+                    private val lessonService: LessonService) {
 
     @Throws(NotFoundException::class)
     fun getCourseById(id: UUID): CourseResponseModel {
@@ -39,9 +42,10 @@ class CourseService(private val courseRepository: CourseRepository,
             throw BadRequestException("Период обучени задан некоретно")
         if (!educationProgramRepository.existsById(model.educationProgramId))
             throw NotFoundException("Программа обучения не найдена")
-        if(model.timetables.isNotEmpty()) {
-            TODO("")
-        }
+//        if(model.timetables.isNotEmpty()) {
+//            model.timetables = timetableService.addTimetables(model.timetables).toMutableSet()
+//            lessonService.addLessonsForCourse(model)
+//        }
         return courseRepository.save(model.toEntity()).toModel()
     }
 
@@ -88,3 +92,4 @@ private fun CourseRequestModel.toEntity() =
 
 private fun CourseEntity.toModel() =
         CourseResponseModel(id, educationProgramId, status, startDate, endDate, creationDate, isActual)
+

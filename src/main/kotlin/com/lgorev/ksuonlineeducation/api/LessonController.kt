@@ -5,6 +5,9 @@ import com.lgorev.ksuonlineeducation.domain.lesson.LessonRequestModel
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonRequestPageModel
 import com.lgorev.ksuonlineeducation.service.LessonLogService
 import com.lgorev.ksuonlineeducation.service.LessonService
+import org.springframework.http.ResponseEntity
+import org.springframework.http.ResponseEntity.ok
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -13,21 +16,27 @@ import java.util.*
 class LessonController(private val lessonService: LessonService,
                        private val lessonLogService: LessonLogService) {
     @GetMapping
-    fun getById(@RequestParam id: UUID) = lessonService.getLessonById(id)
+    @PreAuthorize("isAuthenticated()")
+    fun getById(@RequestParam id: UUID) = ok(lessonService.getLessonById(id))
 
     @PostMapping("page")
-    fun getPage(@RequestBody model: LessonRequestPageModel) = lessonService.getLessonPage(model)
+    @PreAuthorize("isAuthenticated()")
+    fun getPage(@RequestBody model: LessonRequestPageModel) = ok(lessonService.getLessonPage(model))
 
     @PostMapping
-    fun add(@RequestBody model: LessonRequestModel) = lessonService.addLesson(model)
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun add(@RequestBody model: LessonRequestModel) = ok(lessonService.addLesson(model))
 
     @PutMapping
-    fun update(@RequestBody model: LessonRequestModel) = lessonService.updateLesson(model)
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun update(@RequestBody model: LessonRequestModel) = ok(lessonService.updateLesson(model))
 
     @DeleteMapping
-    fun delete(@RequestParam id: UUID) = lessonService.deleteLesson(id)
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun delete(@RequestParam id: UUID) = ok(lessonService.deleteLesson(id))
 
     @PostMapping("logs/page")
-    fun getPage(@RequestBody model: LessonLogPageRequestModel) = lessonLogService.getLessonLogPage(model)
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun getPage(@RequestBody model: LessonLogPageRequestModel) = ok(lessonLogService.getLessonLogPage(model))
 
 }

@@ -73,6 +73,6 @@ class TrainingDirectionService(private val trainingDirectionRepository: Training
     fun deleteTrainingDirection(id: UUID) = trainingDirectionRepository.deleteById(id)
 }
 
-private fun TrainingDirectionRequestModel.toEntity() = TrainingDirectionEntity(id, name, description, facultyId)
+private fun TrainingDirectionRequestModel.toEntity() = TrainingDirectionEntity(id, name, code, description, facultyId)
 
-private fun TrainingDirectionEntity.toModel() = TrainingDirectionResponseModel(id, name, description, facultyId)
+private fun TrainingDirectionEntity.toModel() = TrainingDirectionResponseModel(id, name, code, description, facultyId)

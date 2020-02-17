@@ -11,6 +11,8 @@ data class TrainingDirectionEntity(
         val id: UUID = UUID.randomUUID(),
         @Column(name = "name", unique = true)
         var name: String = "",
+        @Column(name = "code")
+        var code: String,
         @Column(name = "description")
         var description: String,
         @Column(name = "faculty_id")

@@ -14,7 +14,8 @@ class TrainingDirectionController (private val trainingDirectionService: Trainin
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    fun getById(@RequestParam id: UUID) = ok(trainingDirectionService.getTrainingDirectionById(id))
+    fun getById(@RequestParam id: UUID) =
+            ok(trainingDirectionService.getTrainingDirectionById(id))
 
     @PostMapping("page")
     @PreAuthorize("isAuthenticated()")
@@ -23,13 +24,16 @@ class TrainingDirectionController (private val trainingDirectionService: Trainin
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
-    fun add(@RequestBody model: TrainingDirectionRequestModel) = ok(trainingDirectionService.addTrainingDirection(model))
+    fun add(@RequestBody model: TrainingDirectionRequestModel) =
+            ok(trainingDirectionService.addTrainingDirection(model))
 
     @PutMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
-    fun update(@RequestBody model: TrainingDirectionRequestModel) = ok(trainingDirectionService.updateTrainingDirection(model))
+    fun update(@RequestBody model: TrainingDirectionRequestModel) =
+            ok(trainingDirectionService.updateTrainingDirection(model))
 
     @DeleteMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
-    fun delete(@RequestParam id: UUID) = ok(trainingDirectionService.deleteTrainingDirection(id))
+    fun delete(@RequestParam id: UUID) =
+            ok(trainingDirectionService.deleteTrainingDirection(id))
 }

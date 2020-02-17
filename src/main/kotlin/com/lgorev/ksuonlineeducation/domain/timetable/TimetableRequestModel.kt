@@ -11,7 +11,7 @@ import java.util.*
 
 data class TimetableRequestModel(
         val id: UUID = UUID.randomUUID(),
-        val courseId: UUID,
+        var courseId: UUID,
         val dayOfWeek: DayOfWeek,
         @JsonSerialize(using = LocalTimeSerializer::class)
         @JsonDeserialize(using = LocalTimeDeserializer::class)

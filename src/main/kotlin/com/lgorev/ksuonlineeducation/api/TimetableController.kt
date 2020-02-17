@@ -2,6 +2,8 @@ package com.lgorev.ksuonlineeducation.api
 
 import com.lgorev.ksuonlineeducation.domain.timetable.TimetableRequestModel
 import com.lgorev.ksuonlineeducation.service.TimetableService
+import org.springframework.http.ResponseEntity.ok
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -10,17 +12,22 @@ import java.util.*
 class TimetableController(private val timetableService: TimetableService) {
 
     @GetMapping
-    fun getById(@RequestParam id: UUID) = timetableService.getTimetableById(id)
+    @PreAuthorize("isAuthenticated()")
+    fun getById(@RequestParam id: UUID) = ok(timetableService.getTimetableById(id))
 
     @GetMapping("course")
-    fun getByCourseId(@RequestParam id: UUID) = timetableService.getTimetablesByCourseId(id)
+    @PreAuthorize("isAuthenticated()")
+    fun getByCourseId(@RequestParam id: UUID) = ok(timetableService.getTimetablesByCourseId(id))
 
     @PostMapping
-    fun add(@RequestBody model: TimetableRequestModel) = timetableService.addTimetable(model)
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun add(@RequestBody model: TimetableRequestModel) = ok(timetableService.addTimetable(model))
 
     @PutMapping
-    fun update(@RequestBody model: TimetableRequestModel) = timetableService.updateTimetable(model)
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun update(@RequestBody model: TimetableRequestModel) = ok(timetableService.updateTimetable(model))
 
     @DeleteMapping
-    fun delete(@RequestParam id: UUID) = timetableService.deleteTimetable(id)
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun delete(@RequestParam id: UUID) = ok(timetableService.deleteTimetable(id))
 }

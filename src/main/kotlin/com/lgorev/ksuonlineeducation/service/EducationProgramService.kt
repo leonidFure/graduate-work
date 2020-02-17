@@ -55,7 +55,6 @@ class EducationProgramService(private val educationProgramRepository: EducationP
             throw NotFoundException("Предмет не найден")
 
         educationProgramRepository.findByIdOrNull(model.id)?.let { program ->
-            program.code = model.code
             program.subjectId = model.subjectId
             program.name = model.name
             program.description = model.description
@@ -70,7 +69,7 @@ class EducationProgramService(private val educationProgramRepository: EducationP
 }
 
 private fun EducationProgramEntity.toModel() =
-        EducationProgramResponseModel(id, code, subjectId, name, description, creationDate, status, isActual)
+        EducationProgramResponseModel(id, subjectId, name, description, creationDate, status, isActual)
 
 private fun EducationProgramRequestModel.toEntity() =
-        EducationProgramEntity(id, subjectId, code, name, description, creationDate, status)
+        EducationProgramEntity(id, subjectId, name, description, creationDate, status, isActual)

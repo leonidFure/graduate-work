@@ -35,12 +35,12 @@ class TimetableService(private val timetableRepository: TimetableRepository,
         return timetableRepository.save(model.toEntity()).toModel()
     }
 
-    fun addTimetables(timetables: MutableSet<TimetableRequestModel>) {
-        timetables.forEach { t ->
-            if(t.endTime.isBefore(t.startTime))
-                throw BadRequestException("Период занятия задан некоректно")
-        }
-        TODO("Добавить проверку на пересечения между расписаниями.")
+    @Throws(BadRequestException::class)
+    fun addTimetables(timetables: MutableSet<TimetableRequestModel>): List<TimetableRequestModel> {
+        val hasNotValidTimetable = timetables.any { it.endTime.isAfter(it.startTime) }
+        if(hasNotValidTimetable)
+            throw BadRequestException("Период занятия задан некоректно")
+        return timetableRepository.saveAll(timetables.map { it.toEntity() }).map { it.toRequestModel() }
     }
 
     @Throws(NotFoundException::class, BadRequestException::class)
@@ -66,3 +66,4 @@ class TimetableService(private val timetableRepository: TimetableRepository,
 
 private fun TimetableEntity.toModel() = TimetableResponseModel(id, courseId, dayOfWeek, startTime, endTime, type, isActual)
 private fun TimetableRequestModel.toEntity() = TimetableEntity(id, courseId, dayOfWeek, startTime, endTime, type, isActual)
+private fun TimetableEntity.toRequestModel() = TimetableRequestModel(id, courseId, dayOfWeek, startTime, endTime, type, isActual)

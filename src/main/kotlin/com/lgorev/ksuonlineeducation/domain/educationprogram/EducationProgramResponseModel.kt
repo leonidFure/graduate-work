@@ -10,7 +10,6 @@ import java.util.*
 
 data class EducationProgramResponseModel(
         val id: UUID = UUID.randomUUID(),
-        val code: String,
         val subjectId: UUID,
         val name: String,
         val description: String,
