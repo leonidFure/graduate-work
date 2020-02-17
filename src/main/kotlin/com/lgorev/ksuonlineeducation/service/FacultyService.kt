@@ -3,10 +3,10 @@ package com.lgorev.ksuonlineeducation.service
 import com.lgorev.ksuonlineeducation.domain.faculty.FacultyPageRequestModel
 import com.lgorev.ksuonlineeducation.domain.faculty.FacultyResponseModel
 import com.lgorev.ksuonlineeducation.domain.faculty.FacultyRequestModel
+import com.lgorev.ksuonlineeducation.domain.faculty.TeachersFacultiesModel
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.exception.UniqueConstraintException
-import com.lgorev.ksuonlineeducation.repository.faculty.FacultyEntity
-import com.lgorev.ksuonlineeducation.repository.faculty.FacultyRepository
+import com.lgorev.ksuonlineeducation.repository.faculty.*
 import com.lgorev.ksuonlineeducation.repository.teacher.TeacherRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -18,7 +18,8 @@ import java.util.*
 @Service
 @Transactional
 class FacultyService(private val facultyRepository: FacultyRepository,
-                     private val teacherRepository: TeacherRepository) {
+                     private val teacherRepository: TeacherRepository,
+                     private val teachersFacultiesRepository: TeachersFacultiesRepository) {
 
     @Throws(UniqueConstraintException::class)
     fun addFaculty(model: FacultyRequestModel): FacultyResponseModel {
@@ -60,16 +61,21 @@ class FacultyService(private val facultyRepository: FacultyRepository,
 
     @Throws(NotFoundException::class)
     fun getFacultyById(id: UUID): FacultyResponseModel {
-        facultyRepository.findByIdOrNull(id)?.let {
-            return it.toModel()
-        }
+        facultyRepository.findByIdOrNull(id)?.let { return it.toModel() }
+        throw NotFoundException("Факультет не найден")
+    }
+
+    fun getFacultyByManagerId(id: UUID): FacultyResponseModel {
+        facultyRepository.findByManagerId(id)?.let { return it.toModel() }
         throw NotFoundException("Факультет не найден")
     }
 
     fun getFacultyPage(model: FacultyPageRequestModel): Page<FacultyResponseModel> {
-        val pageable = PageRequest.of(model.pageNum, model.pageSize, model.sortType, model.sortField)
+        val pageable = PageRequest.of(model.pageNum, model.pageSize, model.sortType, "name")
         return if (model.nameFilter != null)
-            facultyRepository.findAllByNameContainingIgnoreCase(pageable, model.nameFilter).map { it.toModel() }
+            facultyRepository.
+                    findAllByNameContainingIgnoreCase(pageable, model.nameFilter)
+                    .map { it.toModel() }
         else
             facultyRepository.findAll(pageable).map { it.toModel() }
 
@@ -77,9 +83,23 @@ class FacultyService(private val facultyRepository: FacultyRepository,
 
     fun deleteFaculty(id: UUID) = facultyRepository.deleteById(id)
 
+    fun addTeacherToFaculty(model: TeachersFacultiesModel) =
+            teachersFacultiesRepository.save(model.toEntity()).toModel()
+
+    fun removeTeacherFromFaculty(model: TeachersFacultiesModel) =
+            teachersFacultiesRepository.delete(model.toEntity())
+
 }
 
-private fun FacultyEntity.toModel() = FacultyResponseModel(id, name, description, manager?.toModel())
+private fun FacultyEntity.toModel() =
+        FacultyResponseModel(id, name, description, manager?.toModel())
 
-private fun FacultyRequestModel.toEntity() = FacultyEntity(id, name, description, managerId)
+private fun FacultyRequestModel.toEntity() =
+        FacultyEntity(id, name, description, managerId)
+
+private fun TeachersFacultiesEntity.toModel() =
+        TeachersFacultiesModel(teachersFacultiesId.teacherId, teachersFacultiesId.facultyId)
+
+private fun TeachersFacultiesModel.toEntity() =
+        TeachersFacultiesEntity(TeachersFacultiesId(teacherId, facultyId))
 

@@ -2,6 +2,7 @@ package com.lgorev.ksuonlineeducation.api
 
 import com.lgorev.ksuonlineeducation.domain.faculty.FacultyPageRequestModel
 import com.lgorev.ksuonlineeducation.domain.faculty.FacultyRequestModel
+import com.lgorev.ksuonlineeducation.domain.faculty.TeachersFacultiesModel
 import com.lgorev.ksuonlineeducation.service.FacultyService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -17,6 +18,10 @@ class FacultyController(private val facultyService: FacultyService) {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     fun getById(@RequestParam id: UUID) = ok(facultyService.getFacultyById(id))
+
+    @GetMapping("manager")
+    @PreAuthorize("isAuthenticated()")
+    fun getByManagerId(@RequestParam id: UUID) = ok(facultyService.getFacultyByManagerId(id))
 
     /*Нужен ли тут пэйджинг*/
     @PostMapping("page")
@@ -35,4 +40,15 @@ class FacultyController(private val facultyService: FacultyService) {
     @DeleteMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
     fun delete(@RequestParam id: UUID) = ok(facultyService.deleteFaculty(id))
+
+    @PostMapping("teacher/add")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun addTeacherToFaculty(@RequestBody model: TeachersFacultiesModel) =
+            ok(facultyService.addTeacherToFaculty(model))
+
+
+    @PostMapping("teacher/remove")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun removeTeacherFromFaculty(@RequestBody model: TeachersFacultiesModel) =
+            ok(facultyService.removeTeacherFromFaculty(model))
 }

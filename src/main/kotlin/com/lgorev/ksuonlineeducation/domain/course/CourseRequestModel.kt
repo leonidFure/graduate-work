@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
+import com.lgorev.ksuonlineeducation.domain.timetable.TimetableRequestModel
 import java.time.LocalDate
 import java.util.*
 
@@ -24,7 +25,8 @@ data class CourseRequestModel(
         @JsonDeserialize(using = LocalDateDeserializer::class)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         val creationDate: LocalDate = LocalDate.now(),
-        val isActual: Boolean = true
+        val isActual: Boolean = true,
+        val timetables: MutableSet<TimetableRequestModel> = mutableSetOf()
 )
 
 enum class CourseStatus { AWAIT_STUDENTS, IN_PROGRESS, DONE }

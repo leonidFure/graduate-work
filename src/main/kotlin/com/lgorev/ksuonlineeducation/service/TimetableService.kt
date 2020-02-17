@@ -35,6 +35,14 @@ class TimetableService(private val timetableRepository: TimetableRepository,
         return timetableRepository.save(model.toEntity()).toModel()
     }
 
+    fun addTimetables(timetables: MutableSet<TimetableRequestModel>) {
+        timetables.forEach { t ->
+            if(t.endTime.isBefore(t.startTime))
+                throw BadRequestException("Период занятия задан некоректно")
+        }
+        TODO("Добавить проверку на пересечения между расписаниями.")
+    }
+
     @Throws(NotFoundException::class, BadRequestException::class)
     fun updateTimetable(model: TimetableRequestModel): TimetableResponseModel {
         if (courseRepository.existsById(model.courseId))

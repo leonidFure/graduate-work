@@ -21,7 +21,8 @@ import java.util.*
 class CourseService(private val courseRepository: CourseRepository,
                     private val educationProgramRepository: EducationProgramRepository,
                     private val coursesTeachersRepository: CoursesTeachersRepository,
-                    private val teachersRepository: TeacherRepository) {
+                    private val teachersRepository: TeacherRepository,
+                    private val timetableService: TimetableService) {
 
     @Throws(NotFoundException::class)
     fun getCourseById(id: UUID): CourseResponseModel {
@@ -38,6 +39,9 @@ class CourseService(private val courseRepository: CourseRepository,
             throw BadRequestException("Период обучени задан некоретно")
         if (!educationProgramRepository.existsById(model.educationProgramId))
             throw NotFoundException("Программа обучения не найдена")
+        if(model.timetables.isNotEmpty()) {
+            TODO("")
+        }
         return courseRepository.save(model.toEntity()).toModel()
     }
 
