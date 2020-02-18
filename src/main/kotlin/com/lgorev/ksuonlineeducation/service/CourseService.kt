@@ -7,7 +7,6 @@ import com.lgorev.ksuonlineeducation.domain.course.CoursesTeachersRequestModel
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.repository.course.*
-import com.lgorev.ksuonlineeducation.repository.educationprogram.EducationProgramRepository
 import com.lgorev.ksuonlineeducation.repository.teacher.TeacherRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
@@ -21,7 +20,8 @@ class CourseService(private val courseRepository: CourseRepository,
                     private val coursesTeachersRepository: CoursesTeachersRepository,
                     private val teachersRepository: TeacherRepository) {
 
-    @Autowired private lateinit var educationProgramService: EducationProgramService
+    @Autowired
+    private lateinit var educationProgramService: EducationProgramService
 
     @Throws(NotFoundException::class)
     fun getCourseById(id: UUID): CourseResponseModel {
@@ -59,7 +59,10 @@ class CourseService(private val courseRepository: CourseRepository,
         throw NotFoundException("Курс не найден")
     }
 
-    fun deleteCourse(id: UUID) = courseRepository.deleteById(id)
+    fun deleteCourse(id: UUID) {
+        if (courseRepository.existsById(id))
+            courseRepository.deleteById(id)
+    }
 
     @Throws(NotFoundException::class, BadRequestException::class)
     fun addTeacherToCourse(model: CoursesTeachersRequestModel) {
@@ -70,8 +73,12 @@ class CourseService(private val courseRepository: CourseRepository,
         coursesTeachersRepository.save(model.toEntity())
     }
 
-    fun removeTeacherFromCourse(model: CoursesTeachersRequestModel) =
-            coursesTeachersRepository.delete(model.toEntity())
+    fun removeTeacherFromCourse(model: CoursesTeachersRequestModel) {
+        val entity = model.toEntity()
+        if (coursesTeachersRepository.existsById(entity.coursesTeachersId)) {
+            coursesTeachersRepository.delete(entity)
+        }
+    }
 }
 
 private fun CourseRequestModel.toEntity() =

@@ -5,7 +5,6 @@ import com.lgorev.ksuonlineeducation.domain.timetable.TimetableResponseModel
 import com.lgorev.ksuonlineeducation.domain.timetable.TimetablesRequestModel
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
-import com.lgorev.ksuonlineeducation.repository.course.CourseRepository
 import com.lgorev.ksuonlineeducation.repository.timetable.TimetableEntity
 import com.lgorev.ksuonlineeducation.repository.timetable.TimetableRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,8 +17,10 @@ import java.util.*
 @Transactional
 class TimetableService(private val timetableRepository: TimetableRepository) {
 
-    @Autowired private lateinit var courseService: CourseService
-    @Autowired private lateinit var lessonService: LessonService
+    @Autowired
+    private lateinit var courseService: CourseService
+    @Autowired
+    private lateinit var lessonService: LessonService
 
     @Throws(NotFoundException::class)
     fun getTimetableById(id: UUID): TimetableResponseModel {
@@ -44,7 +45,7 @@ class TimetableService(private val timetableRepository: TimetableRepository) {
     @Throws(BadRequestException::class)
     fun addTimetables(model: TimetablesRequestModel): List<TimetableResponseModel> {
         val hasNotValidTimetable = model.timetables.any { it.endTime.isBefore(it.startTime) }
-        if(hasNotValidTimetable)
+        if (hasNotValidTimetable)
             throw BadRequestException("Период занятия задан некоректно")
         val list = timetableRepository.saveAll(model.timetables.map { it.toEntity() }).map { it.toModel() }
         lessonService.addLessonsForCourse(list)
@@ -69,7 +70,10 @@ class TimetableService(private val timetableRepository: TimetableRepository) {
         throw NotFoundException("Расписание не найдено")
     }
 
-    fun deleteTimetable(id: UUID) = timetableRepository.deleteById(id)
+    fun deleteTimetable(id: UUID) {
+        if (timetableRepository.existsById(id))
+            timetableRepository.deleteById(id)
+    }
 }
 
 private fun TimetableEntity.toModel() = TimetableResponseModel(id, courseId, dayOfWeek, startTime, endTime, type, isActual)

@@ -65,6 +65,8 @@ class FacultyService(private val facultyRepository: FacultyRepository,
         throw NotFoundException("Факультет не найден")
     }
 
+    fun existFacultyById(id: UUID) = facultyRepository.existsById(id)
+
     @Throws(NotFoundException::class)
     fun getFacultyByManagerId(id: UUID): FacultyResponseModel {
         facultyRepository.findByManagerId(id)?.let { return it.toModel() }
@@ -81,7 +83,10 @@ class FacultyService(private val facultyRepository: FacultyRepository,
             facultyRepository.findAll(pageable).map { it.toModel() }
     }
 
-    fun deleteFaculty(id: UUID) = facultyRepository.deleteById(id)
+    fun deleteFaculty(id: UUID) {
+        if (facultyRepository.existsById(id))
+            facultyRepository.deleteById(id)
+    }
 
     @Throws(NotFoundException::class)
     fun addTeacherToFaculty(model: TeachersFacultiesModel) {
@@ -92,8 +97,11 @@ class FacultyService(private val facultyRepository: FacultyRepository,
         teachersFacultiesRepository.save(model.toEntity()).toModel()
     }
 
-    fun removeTeacherFromFaculty(model: TeachersFacultiesModel) =
-            teachersFacultiesRepository.delete(model.toEntity())
+    fun removeTeacherFromFaculty(model: TeachersFacultiesModel) {
+        val entity = model.toEntity()
+        teachersFacultiesRepository.existsById(entity.teachersFacultiesId)
+        teachersFacultiesRepository.delete(entity)
+    }
 }
 
 private fun FacultyEntity.toModel() =

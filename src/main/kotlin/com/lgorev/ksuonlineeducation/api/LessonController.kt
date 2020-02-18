@@ -5,7 +5,6 @@ import com.lgorev.ksuonlineeducation.domain.lesson.LessonRequestModel
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonRequestPageModel
 import com.lgorev.ksuonlineeducation.service.LessonLogService
 import com.lgorev.ksuonlineeducation.service.LessonService
-import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*

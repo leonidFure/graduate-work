@@ -1,17 +1,16 @@
 package com.lgorev.ksuonlineeducation.api
 
-    import com.lgorev.ksuonlineeducation.domain.theme.ThemeRequestModel
+import com.lgorev.ksuonlineeducation.domain.theme.ThemeRequestModel
 import com.lgorev.ksuonlineeducation.domain.theme.ThemeRequestPageModel
 import com.lgorev.ksuonlineeducation.service.ThemeService
-    import org.springframework.http.ResponseEntity
-    import org.springframework.http.ResponseEntity.*
-    import org.springframework.security.access.prepost.PreAuthorize
-    import org.springframework.web.bind.annotation.*
+import org.springframework.http.ResponseEntity.*
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
 @RequestMapping("api/themes")
-class ThemeController (private val themeService: ThemeService) {
+class ThemeController(private val themeService: ThemeService) {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     fun getById(@RequestParam id: UUID) = ok(themeService.getThemeById(id))

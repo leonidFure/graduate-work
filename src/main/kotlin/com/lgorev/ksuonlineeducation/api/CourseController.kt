@@ -2,8 +2,7 @@ package com.lgorev.ksuonlineeducation.api
 
 import com.lgorev.ksuonlineeducation.domain.course.CourseRequestModel
 import com.lgorev.ksuonlineeducation.domain.course.CourseRequestPageModel
-import com.lgorev.ksuonlineeducation.domain.educationprogram.EducationProgramRequestModel
-import com.lgorev.ksuonlineeducation.domain.educationprogram.EducationProgramRequestPageModel
+import com.lgorev.ksuonlineeducation.domain.course.CoursesTeachersRequestModel
 import com.lgorev.ksuonlineeducation.service.CourseService
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.security.access.prepost.PreAuthorize
@@ -33,4 +32,14 @@ class CourseController(private val courseService: CourseService) {
     @DeleteMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
     fun delete(@RequestParam id: UUID) = ok(courseService.deleteCourse(id))
+
+    @PostMapping("teacher/add")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun addTeacherToCourse(@RequestBody model: CoursesTeachersRequestModel) =
+            ok(courseService.addTeacherToCourse(model))
+
+    @PostMapping("teacher/remove")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun removeTeacherFromCourse(@RequestBody model: CoursesTeachersRequestModel) =
+            ok(courseService.removeTeacherFromCourse(model))
 }

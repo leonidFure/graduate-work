@@ -19,9 +19,12 @@ import java.util.*
 @Transactional
 class LessonService(private val lessonRepository: LessonRepository) {
 
-    @Autowired private lateinit var timetableService: TimetableService
-    @Autowired private lateinit var courseService: CourseService
-    @Autowired private lateinit var lessonLogService: LessonLogService
+    @Autowired
+    private lateinit var timetableService: TimetableService
+    @Autowired
+    private lateinit var courseService: CourseService
+    @Autowired
+    private lateinit var lessonLogService: LessonLogService
 
     @Throws(NotFoundException::class)
     fun getLessonById(id: UUID): LessonResponseModel {
@@ -64,7 +67,10 @@ class LessonService(private val lessonRepository: LessonRepository) {
         throw NotFoundException("Занятие не найдено")
     }
 
-    fun deleteLesson(id: UUID) = lessonRepository.deleteById(id)
+    fun deleteLesson(id: UUID) {
+        if (lessonRepository.existsById(id))
+            lessonRepository.deleteById(id)
+    }
 
     fun addLessonsForCourse(timetables: List<TimetableResponseModel>) {
         val lessons = mutableSetOf<LessonEntity>()

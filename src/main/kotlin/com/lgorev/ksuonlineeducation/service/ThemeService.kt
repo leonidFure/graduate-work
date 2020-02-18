@@ -4,9 +4,9 @@ import com.lgorev.ksuonlineeducation.domain.theme.ThemeRequestModel
 import com.lgorev.ksuonlineeducation.domain.theme.ThemeRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.theme.ThemeResponseModel
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
-import com.lgorev.ksuonlineeducation.repository.educationprogram.EducationProgramRepository
 import com.lgorev.ksuonlineeducation.repository.theme.ThemeEntity
 import com.lgorev.ksuonlineeducation.repository.theme.ThemeRepository
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,8 +14,10 @@ import java.util.*
 
 @Service
 @Transactional
-class ThemeService(private val themeRepository: ThemeRepository,
-                   private val educationProgramRepository: EducationProgramRepository) {
+class ThemeService(private val themeRepository: ThemeRepository) {
+
+    @Autowired
+    private lateinit var educationProgramService: EducationProgramService
 
     @Throws(NotFoundException::class)
     fun getThemeById(id: UUID): ThemeResponseModel {
@@ -32,7 +34,7 @@ class ThemeService(private val themeRepository: ThemeRepository,
                 throw NotFoundException("Основная тема не найдена")
         }
 
-        if (!educationProgramRepository.existsById(model.educationProgramId))
+        if (!educationProgramService.existEducationProgramById(model.educationProgramId))
             throw NotFoundException("Прогрмма обучения не найдена")
 
         return themeRepository.save(model.toEntity())
@@ -45,7 +47,7 @@ class ThemeService(private val themeRepository: ThemeRepository,
                 throw NotFoundException("Основная тема не найдена")
         }
 
-        if (!educationProgramRepository.existsById(model.educationProgramId))
+        if (!educationProgramService.existEducationProgramById(model.educationProgramId))
             throw NotFoundException("Прогрмма обучения не найдена")
 
         themeRepository.findByIdOrNull(model.id)?.let { theme ->
@@ -59,7 +61,10 @@ class ThemeService(private val themeRepository: ThemeRepository,
         throw NotFoundException("Тема не найдена")
     }
 
-    fun deleteTheme(id: UUID) = themeRepository.deleteById(id)
+    fun deleteTheme(id: UUID) {
+        if (themeRepository.existsById(id))
+            themeRepository.deleteById(id)
+    }
 }
 
 private fun ThemeEntity.toModel() = ThemeResponseModel(id, parentThemeId, number, educationProgramId, name, description)

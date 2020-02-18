@@ -7,9 +7,8 @@ import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.UniqueConstraintException
 import com.lgorev.ksuonlineeducation.repository.educationprogram.EducationProgramEntity
 import com.lgorev.ksuonlineeducation.repository.educationprogram.EducationProgramRepository
-import com.lgorev.ksuonlineeducation.repository.subject.SubjectRepository
-import com.lgorev.ksuonlineeducation.repository.trainingdirection.TrainingDirectionRepository
 import javassist.NotFoundException
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -18,8 +17,10 @@ import java.util.*
 
 @Service
 @Transactional
-class EducationProgramService(private val educationProgramRepository: EducationProgramRepository,
-                              private val subjectRepository: SubjectRepository) {
+class EducationProgramService(private val educationProgramRepository: EducationProgramRepository) {
+
+    @Autowired
+    private lateinit var subjectService: SubjectService
 
     @Throws(NotFoundException::class)
     fun getEducationProgramById(id: UUID): EducationProgramResponseModel {
@@ -41,7 +42,7 @@ class EducationProgramService(private val educationProgramRepository: EducationP
         if (educationProgramRepository.existsByName(model.name))
             throw UniqueConstraintException("Программа обучения ${model.name} уже существует")
 
-        if (!subjectRepository.existsById(model.subjectId))
+        if (!subjectService.existSubjectById(model.subjectId))
             throw NotFoundException("Предмет не найден")
 
         return educationProgramRepository.save(model.toEntity()).toModel()
@@ -52,7 +53,7 @@ class EducationProgramService(private val educationProgramRepository: EducationP
         if (educationProgramRepository.existsByName(model.name))
             throw UniqueConstraintException("Программа обучения ${model.name} уже существует")
 
-        if (!subjectRepository.existsById(model.subjectId))
+        if (!subjectService.existSubjectById(model.subjectId))
             throw NotFoundException("Предмет не найден")
 
         educationProgramRepository.findByIdOrNull(model.id)?.let { program ->
@@ -66,7 +67,10 @@ class EducationProgramService(private val educationProgramRepository: EducationP
         throw NotFoundException("Программа обучения не найдена")
     }
 
-    fun deleteEducationProgram(id: UUID) = educationProgramRepository.deleteById(id)
+    fun deleteEducationProgram(id: UUID) {
+        if (educationProgramRepository.existsById(id))
+            educationProgramRepository.deleteById(id)
+    }
 }
 
 private fun EducationProgramEntity.toModel() =
