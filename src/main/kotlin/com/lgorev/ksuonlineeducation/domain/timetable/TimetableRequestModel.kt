@@ -15,11 +15,11 @@ data class TimetableRequestModel(
         val dayOfWeek: DayOfWeek,
         @JsonSerialize(using = LocalTimeSerializer::class)
         @JsonDeserialize(using = LocalTimeDeserializer::class)
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "hh:mm:ss")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
         val startTime: LocalTime,
         @JsonSerialize(using = LocalTimeSerializer::class)
         @JsonDeserialize(using = LocalTimeDeserializer::class)
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "hh:mm:ss")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
         val endTime: LocalTime,
         val type: TimetableType = TimetableType.EVERY_WEEK,
         val isActual: Boolean

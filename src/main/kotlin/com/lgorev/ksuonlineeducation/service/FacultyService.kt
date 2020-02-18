@@ -21,7 +21,7 @@ class FacultyService(private val facultyRepository: FacultyRepository,
                      private val teacherRepository: TeacherRepository,
                      private val teachersFacultiesRepository: TeachersFacultiesRepository) {
 
-    @Throws(UniqueConstraintException::class)
+    @Throws(UniqueConstraintException::class, NotFoundException::class)
     fun addFaculty(model: FacultyRequestModel): FacultyResponseModel {
         if (facultyRepository.existsByName(model.name))
             throw UniqueConstraintException(message = "Факультет ${model.name} уже существует")
@@ -65,6 +65,7 @@ class FacultyService(private val facultyRepository: FacultyRepository,
         throw NotFoundException("Факультет не найден")
     }
 
+    @Throws(NotFoundException::class)
     fun getFacultyByManagerId(id: UUID): FacultyResponseModel {
         facultyRepository.findByManagerId(id)?.let { return it.toModel() }
         throw NotFoundException("Факультет не найден")
@@ -73,22 +74,26 @@ class FacultyService(private val facultyRepository: FacultyRepository,
     fun getFacultyPage(model: FacultyPageRequestModel): Page<FacultyResponseModel> {
         val pageable = PageRequest.of(model.pageNum, model.pageSize, model.sortType, "name")
         return if (model.nameFilter != null)
-            facultyRepository.
-                    findAllByNameContainingIgnoreCase(pageable, model.nameFilter)
+            facultyRepository
+                    .findAllByNameContainingIgnoreCase(pageable, model.nameFilter)
                     .map { it.toModel() }
         else
             facultyRepository.findAll(pageable).map { it.toModel() }
-
     }
 
     fun deleteFaculty(id: UUID) = facultyRepository.deleteById(id)
 
-    fun addTeacherToFaculty(model: TeachersFacultiesModel) =
-            teachersFacultiesRepository.save(model.toEntity()).toModel()
+    @Throws(NotFoundException::class)
+    fun addTeacherToFaculty(model: TeachersFacultiesModel) {
+        if (!facultyRepository.existsById(model.facultyId))
+            throw NotFoundException("Факультет не найден")
+        if (!teacherRepository.existsById(model.teacherId))
+            throw NotFoundException("Преподватель не найден")
+        teachersFacultiesRepository.save(model.toEntity()).toModel()
+    }
 
     fun removeTeacherFromFaculty(model: TeachersFacultiesModel) =
             teachersFacultiesRepository.delete(model.toEntity())
-
 }
 
 private fun FacultyEntity.toModel() =

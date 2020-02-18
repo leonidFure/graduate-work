@@ -1,6 +1,7 @@
 package com.lgorev.ksuonlineeducation.api
 
 import com.lgorev.ksuonlineeducation.domain.timetable.TimetableRequestModel
+import com.lgorev.ksuonlineeducation.domain.timetable.TimetablesRequestModel
 import com.lgorev.ksuonlineeducation.service.TimetableService
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.security.access.prepost.PreAuthorize
@@ -19,9 +20,13 @@ class TimetableController(private val timetableService: TimetableService) {
     @PreAuthorize("isAuthenticated()")
     fun getByCourseId(@RequestParam id: UUID) = ok(timetableService.getTimetablesByCourseId(id))
 
-    @PostMapping
+    @PostMapping("timetable")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
     fun add(@RequestBody model: TimetableRequestModel) = ok(timetableService.addTimetable(model))
+
+    @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun addTimetables(@RequestBody model: TimetablesRequestModel) = ok(timetableService.addTimetables(model))
 
     @PutMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")

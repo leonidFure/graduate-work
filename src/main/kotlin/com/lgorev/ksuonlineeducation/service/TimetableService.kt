@@ -2,11 +2,13 @@ package com.lgorev.ksuonlineeducation.service
 
 import com.lgorev.ksuonlineeducation.domain.timetable.TimetableRequestModel
 import com.lgorev.ksuonlineeducation.domain.timetable.TimetableResponseModel
+import com.lgorev.ksuonlineeducation.domain.timetable.TimetablesRequestModel
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.repository.course.CourseRepository
 import com.lgorev.ksuonlineeducation.repository.timetable.TimetableEntity
 import com.lgorev.ksuonlineeducation.repository.timetable.TimetableRepository
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,8 +16,10 @@ import java.util.*
 
 @Service
 @Transactional
-class TimetableService(private val timetableRepository: TimetableRepository,
-                       private val courseRepository: CourseRepository) {
+class TimetableService(private val timetableRepository: TimetableRepository) {
+
+    @Autowired private lateinit var courseService: CourseService
+    @Autowired private lateinit var lessonService: LessonService
 
     @Throws(NotFoundException::class)
     fun getTimetableById(id: UUID): TimetableResponseModel {
@@ -23,12 +27,14 @@ class TimetableService(private val timetableRepository: TimetableRepository,
         throw NotFoundException("Расписание не найдено")
     }
 
+    fun getTimetableByIdOrNull(id: UUID) = timetableRepository.findByIdOrNull(id)
+
     fun getTimetablesByCourseId(courseId: UUID) =
             timetableRepository.findAllByCourseId(courseId).map { it.toModel() }
 
     @Throws(NotFoundException::class, BadRequestException::class)
     fun addTimetable(model: TimetableRequestModel): TimetableResponseModel {
-        if (courseRepository.existsById(model.courseId))
+        if (courseService.existCourseById(model.courseId))
             throw NotFoundException("Курс не найден")
         if (model.startTime.isAfter(model.endTime) || model.startTime == model.endTime)
             throw BadRequestException("Некоректное время проведение занятия")
@@ -36,16 +42,18 @@ class TimetableService(private val timetableRepository: TimetableRepository,
     }
 
     @Throws(BadRequestException::class)
-    fun addTimetables(timetables: MutableSet<TimetableRequestModel>): List<TimetableRequestModel> {
-        val hasNotValidTimetable = timetables.any { it.endTime.isAfter(it.startTime) }
+    fun addTimetables(model: TimetablesRequestModel): List<TimetableResponseModel> {
+        val hasNotValidTimetable = model.timetables.any { it.endTime.isBefore(it.startTime) }
         if(hasNotValidTimetable)
             throw BadRequestException("Период занятия задан некоректно")
-        return timetableRepository.saveAll(timetables.map { it.toEntity() }).map { it.toRequestModel() }
+        val list = timetableRepository.saveAll(model.timetables.map { it.toEntity() }).map { it.toModel() }
+        lessonService.addLessonsForCourse(list)
+        return list
     }
 
     @Throws(NotFoundException::class, BadRequestException::class)
     fun updateTimetable(model: TimetableRequestModel): TimetableResponseModel {
-        if (courseRepository.existsById(model.courseId))
+        if (courseService.existCourseById(model.courseId))
             throw NotFoundException("Курс не найден")
         if (model.startTime.isAfter(model.endTime) || model.startTime == model.endTime)
             throw BadRequestException("Некоректное время проведение занятия")
@@ -66,4 +74,3 @@ class TimetableService(private val timetableRepository: TimetableRepository,
 
 private fun TimetableEntity.toModel() = TimetableResponseModel(id, courseId, dayOfWeek, startTime, endTime, type, isActual)
 private fun TimetableRequestModel.toEntity() = TimetableEntity(id, courseId, dayOfWeek, startTime, endTime, type, isActual)
-private fun TimetableEntity.toRequestModel() = TimetableRequestModel(id, courseId, dayOfWeek, startTime, endTime, type, isActual)

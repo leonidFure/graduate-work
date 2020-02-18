@@ -1,16 +1,14 @@
 package com.lgorev.ksuonlineeducation.service
 
-import com.lgorev.ksuonlineeducation.domain.course.CourseRequestModel
 import com.lgorev.ksuonlineeducation.domain.lesson.*
-import com.lgorev.ksuonlineeducation.domain.timetable.TimetableRequestModel
+import com.lgorev.ksuonlineeducation.domain.timetable.TimetableResponseModel
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
-import com.lgorev.ksuonlineeducation.repository.course.CourseRepository
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonEntity
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonLogEntity
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonRepository
-import com.lgorev.ksuonlineeducation.repository.timetable.TimetableRepository
 import com.lgorev.ksuonlineeducation.util.filter
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -19,10 +17,11 @@ import java.util.*
 
 @Service
 @Transactional
-class LessonService(private val lessonRepository: LessonRepository,
-                    private val lessonLogService: LessonLogService,
-                    private val courseRepository: CourseRepository,
-                    private val timetableRepository: TimetableRepository) {
+class LessonService(private val lessonRepository: LessonRepository) {
+
+    @Autowired private lateinit var timetableService: TimetableService
+    @Autowired private lateinit var courseService: CourseService
+    @Autowired private lateinit var lessonLogService: LessonLogService
 
     @Throws(NotFoundException::class)
     fun getLessonById(id: UUID): LessonResponseModel {
@@ -34,10 +33,10 @@ class LessonService(private val lessonRepository: LessonRepository,
 
     @Throws(NotFoundException::class, BadRequestException::class)
     fun addLesson(model: LessonRequestModel): LessonResponseModel {
-        if (!courseRepository.existsById(model.courseId))
+        if (!courseService.existCourseById(model.courseId))
             throw NotFoundException("Курс не найден")
 
-        val timetable = timetableRepository.findByIdOrNull(model.timetableId)
+        val timetable = timetableService.getTimetableByIdOrNull(model.timetableId)
         if (timetable != null) {
             if (timetable.courseId != model.courseId)
                 throw BadRequestException("Курс занятия и расписания не совпадают")
@@ -67,18 +66,23 @@ class LessonService(private val lessonRepository: LessonRepository,
 
     fun deleteLesson(id: UUID) = lessonRepository.deleteById(id)
 
-    fun addLessonsForCourse(model: CourseRequestModel) {
+    fun addLessonsForCourse(timetables: List<TimetableResponseModel>) {
         val lessons = mutableSetOf<LessonEntity>()
-        model.timetables.forEach { t ->
-            lessons.addAll(
-                    (model.startDate..model.endDate)
-                            .filter { day -> day.dayOfWeek == t.dayOfWeek }
-                            .map { day -> LessonEntity(UUID.randomUUID(), model.id, t.id, day, LessonStatus.CREATED) }
+        val courseId = timetables.first().courseId
+        val course = courseService.getCourseById(courseId)
+        val courseRange = (course.startDate..course.endDate)
+
+        timetables.forEach { t ->
+            lessons.addAll(courseRange
+                    .filter { day -> day.dayOfWeek == t.dayOfWeek }
+                    .map { day -> LessonEntity(UUID.randomUUID(), courseId, t.id, day, LessonStatus.CREATED) }
             )
         }
-        val lessonsLog = lessons.map { l -> LessonLogEntity(UUID.randomUUID(), l.id, LocalDateTime.now(), null, LessonStatus.CREATED) }
+
+        val lessonEntities = lessonRepository.saveAll(lessons)
+        val lessonsLog = lessonEntities.map { l -> LessonLogEntity(UUID.randomUUID(), l.id, LocalDateTime.now(), null, LessonStatus.CREATED) }
+
         lessonLogService.addLessonsLog(lessonsLog)
-        lessonRepository.saveAll(lessons)
     }
 }
 

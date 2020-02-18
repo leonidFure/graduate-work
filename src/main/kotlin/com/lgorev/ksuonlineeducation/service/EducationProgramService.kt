@@ -19,7 +19,6 @@ import java.util.*
 @Service
 @Transactional
 class EducationProgramService(private val educationProgramRepository: EducationProgramRepository,
-                              private val trainingDirectionRepository: TrainingDirectionRepository,
                               private val subjectRepository: SubjectRepository) {
 
     @Throws(NotFoundException::class)
@@ -27,6 +26,8 @@ class EducationProgramService(private val educationProgramRepository: EducationP
         educationProgramRepository.findByIdOrNull(id)?.let { return it.toModel() }
         throw NotFoundException("Программа обучения не найдена")
     }
+
+    fun existEducationProgramById(id: UUID) = educationProgramRepository.existsById(id)
 
     @Throws(BadRequestException::class)
     fun getPage(model: EducationProgramRequestPageModel): Page<EducationProgramResponseModel> {
