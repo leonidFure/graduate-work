@@ -32,7 +32,12 @@ class FacultyService(private val facultyRepository: FacultyRepository,
         if (facultyRepository.existsByManagerId(model.managerId))
             throw UniqueConstraintException(message = "За данным преподавателем уже закреплен факультет")
 
-        return facultyRepository.save(model.toEntity()).toModel()
+        val faculty = facultyRepository.save(model.toEntity()).toModel()
+
+        if (faculty.manager != null)
+            addTeacherToFaculty(TeachersFacultiesModel(faculty.id, faculty.manager.id))
+
+        return faculty
     }
 
     @Throws(UniqueConstraintException::class, NotFoundException::class)
@@ -50,13 +55,14 @@ class FacultyService(private val facultyRepository: FacultyRepository,
                 throw UniqueConstraintException(message = "За данным преподавателем уже закреплен факультет")
         }
 
-        facultyRepository.findByIdOrNull(model.id)?.let { faculty ->
+        val faculty = facultyRepository.findByIdOrNull(model.id)
+        if (faculty != null) {
             faculty.name = model.name
             faculty.description = model.description
             faculty.managerId = model.managerId
+            addTeacherToFaculty(TeachersFacultiesModel(faculty.id, faculty.managerId))
             return faculty.toModel()
-        }
-        throw NotFoundException(message = "Факультет не найден")
+        } else throw NotFoundException(message = "Факультет не найден")
     }
 
     @Throws(NotFoundException::class)

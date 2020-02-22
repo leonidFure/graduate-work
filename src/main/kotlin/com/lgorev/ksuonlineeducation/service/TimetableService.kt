@@ -39,7 +39,9 @@ class TimetableService(private val timetableRepository: TimetableRepository) {
             throw NotFoundException("Курс не найден")
         if (model.startTime.isAfter(model.endTime) || model.startTime == model.endTime)
             throw BadRequestException("Некоректное время проведение занятия")
-        return timetableRepository.save(model.toEntity()).toModel()
+        val timetable = timetableRepository.save(model.toEntity()).toModel()
+        lessonService.addLessonsForCourse(mutableListOf(timetable))
+        return timetable
     }
 
     @Throws(BadRequestException::class)
@@ -59,15 +61,17 @@ class TimetableService(private val timetableRepository: TimetableRepository) {
         if (model.startTime.isAfter(model.endTime) || model.startTime == model.endTime)
             throw BadRequestException("Некоректное время проведение занятия")
 
-        timetableRepository.findByIdOrNull(model.id)?.let { timetable ->
+        val timetable = timetableRepository.findByIdOrNull(model.id)
+        if (timetable != null) {
             timetable.dayOfWeek = model.dayOfWeek
             timetable.startTime = model.startTime
             timetable.endTime = model.endTime
             timetable.type = model.type
             timetable.isActual = model.isActual
-            return timetable.toModel()
-        }
-        throw NotFoundException("Расписание не найдено")
+            val responseModel = timetable.toModel()
+            lessonService.updateLessonsForCourse(mutableListOf(responseModel))
+            return responseModel
+        } else throw NotFoundException("Расписание не найдено")
     }
 
     fun deleteTimetable(id: UUID) {

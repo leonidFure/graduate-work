@@ -90,6 +90,12 @@ class LessonService(private val lessonRepository: LessonRepository) {
 
         lessonLogService.addLessonsLog(lessonsLog)
     }
+
+    fun updateLessonsForCourse(timetables: List<TimetableResponseModel>) {
+        val courseId = timetables.first().courseId
+        lessonRepository.deleteAllByCourseId(courseId)
+        addLessonsForCourse(timetables)
+    }
 }
 
 private fun LessonRequestModel.toEntity() = LessonEntity(id, courseId, timetableId, date, status)
