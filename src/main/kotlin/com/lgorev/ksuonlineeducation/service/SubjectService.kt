@@ -6,8 +6,8 @@ import com.lgorev.ksuonlineeducation.domain.subject.SubjectResponseModel
 import com.lgorev.ksuonlineeducation.exception.UniqueConstraintException
 import com.lgorev.ksuonlineeducation.repository.subject.SubjectEntity
 import com.lgorev.ksuonlineeducation.repository.subject.SubjectRepository
-import com.lgorev.ksuonlineeducation.repository.trainingdirection.SubjectForEntranceRepository
 import javassist.NotFoundException
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -16,8 +16,10 @@ import java.util.*
 
 @Service
 @Transactional
-class SubjectService(private val subjectRepository: SubjectRepository,
-                     private val subjectForEntranceRepository: SubjectForEntranceRepository) {
+class SubjectService(private val subjectRepository: SubjectRepository) {
+
+    @Autowired
+    private lateinit var subjectForEntranceService: SubjectForEntranceService
 
     @Throws(UniqueConstraintException::class)
     fun addSubject(model: SubjectRequestModel): SubjectResponseModel {
@@ -52,8 +54,11 @@ class SubjectService(private val subjectRepository: SubjectRepository,
     fun existsSubjectsByIds(ids: MutableSet<UUID>) = subjectRepository.existsByIdIn(ids)
 
     fun getSubjectPage(model: SubjectRequestPageModel): Page<SubjectResponseModel> {
-        val subjectIds = subjectForEntranceRepository.findByDirectionIds(model.trainingDirectionIds)
-        return subjectRepository.findPage(model, subjectIds).map { it.toModel() }
+        return if(model.trainingDirectionIds.isNotEmpty()) {
+            val subjectForEntranceIds = subjectForEntranceService.getSubjectForEntranceByDirectionIds(model.trainingDirectionIds)
+            val ids = subjectForEntranceIds.map { it.subjectsForEntranceId.subjectId }.toMutableSet()
+            subjectRepository.findPage(model, ids).map { it.toModel() }
+        } else subjectRepository.findPage(model, null).map { it.toModel() }
     }
 
     fun deleteSubject(id: UUID) {

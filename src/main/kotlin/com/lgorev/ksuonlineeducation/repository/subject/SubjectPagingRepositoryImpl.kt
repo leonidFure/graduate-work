@@ -15,7 +15,7 @@ class SubjectPagingRepositoryImpl(@PersistenceContext private val em: EntityMana
 
     private val subject = SubjectEntity::class.java
 
-    override fun findPage(model: SubjectRequestPageModel, subjectIds: MutableSet<SubjectsForEntranceEntity>): Page<SubjectEntity> {
+    override fun findPage(model: SubjectRequestPageModel, ids: MutableSet<UUID>?): Page<SubjectEntity> {
         val cb = em.criteriaBuilder
         val cq = cb.createQuery(subject)
         val root = cq.from(subject)
@@ -25,8 +25,8 @@ class SubjectPagingRepositoryImpl(@PersistenceContext private val em: EntityMana
             predicates.add(cb.like(cb.upper(root.get<String>("name")), "%${model.nameFilter.toUpperCase()}%"))
         if (model.typeFilter != null)
             predicates.add(cb.equal(root.get<SubjectType>("type"), model.typeFilter))
-        if(subjectIds.isNotEmpty())
-            predicates.add(root.get<UUID>("id").`in`(subjectIds.map { it.subjectsForEntranceId.subjectId }))
+        if(ids != null)
+            predicates.add(root.get<UUID>("id").`in`(ids))
 
         cq.where(cb.and(*predicates.toTypedArray()))
         if (model.sortType == Sort.Direction.DESC)

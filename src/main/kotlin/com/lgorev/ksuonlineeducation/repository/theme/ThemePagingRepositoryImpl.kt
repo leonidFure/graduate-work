@@ -13,13 +13,14 @@ class ThemePagingRepositoryImpl(@PersistenceContext private val em: EntityManage
 
     private val theme = ThemeEntity::class.java
 
-    override fun findPage(model: ThemeRequestPageModel): Page<ThemeEntity> {
+    override fun findPage(model: ThemeRequestPageModel, ids: MutableSet<UUID>?): Page<ThemeEntity> {
         val cb = em.criteriaBuilder
 
         val cq = cb.createQuery(theme)
         val root = cq.from(theme)
 
         val predicates = mutableSetOf<Predicate>()
+        if(ids != null) predicates.add(root.get<UUID>("id").`in`(ids))
         if (model.nameFilter != null)
             predicates.add(cb.like(cb.upper(root.get<String>("name")), "%${model.nameFilter.toUpperCase()}%"))
         if (model.parentThemeId != null)

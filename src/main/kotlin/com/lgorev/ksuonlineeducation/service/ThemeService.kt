@@ -7,6 +7,7 @@ import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.repository.theme.ThemeEntity
 import com.lgorev.ksuonlineeducation.repository.theme.ThemeRepository
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,6 +19,8 @@ class ThemeService(private val themeRepository: ThemeRepository) {
 
     @Autowired
     private lateinit var educationProgramService: EducationProgramService
+    @Autowired
+    private lateinit var lessonsThemesService: LessonsThemesService
 
     @Throws(NotFoundException::class)
     fun getThemeById(id: UUID): ThemeResponseModel {
@@ -25,7 +28,13 @@ class ThemeService(private val themeRepository: ThemeRepository) {
         throw NotFoundException("Тема не найдена")
     }
 
-    fun getThemePage(model: ThemeRequestPageModel) = themeRepository.findPage(model).map { it.toModel() }
+    fun getThemePage(model: ThemeRequestPageModel): Page<ThemeResponseModel> {
+        return if(model.lessonsIds.isNotEmpty()) {
+            val lessonsThemesIds = lessonsThemesService.getLessonsThemesByLessonIds(model.lessonsIds)
+            val ids = lessonsThemesIds.map { it.lessonsThemesId.themesId }.toMutableSet()
+            themeRepository.findPage(model, ids).map { it.toModel() }
+        } else themeRepository.findPage(model, null).map { it.toModel() }
+    }
 
     @Throws(NotFoundException::class)
     fun addTheme(model: ThemeRequestModel): ThemeEntity {

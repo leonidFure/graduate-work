@@ -15,13 +15,14 @@ import java.util.*
 
 @Service
 @Transactional
-class TrainingDirectionService(private val trainingDirectionRepository: TrainingDirectionRepository,
-                               private val subjectForEntranceRepository: SubjectForEntranceRepository) {
+class TrainingDirectionService(private val trainingDirectionRepository: TrainingDirectionRepository) {
 
     @Autowired
     private lateinit var facultyService: FacultyService
     @Autowired
     private lateinit var subjectService: SubjectService
+    @Autowired
+    private lateinit var subjectForEntranceService: SubjectForEntranceService
 
     @Throws(UniqueConstraintException::class)
     fun addTrainingDirection(model: TrainingDirectionRequestModel): TrainingDirectionResponseModel {
@@ -36,8 +37,8 @@ class TrainingDirectionService(private val trainingDirectionRepository: Training
             if (!subjectService.existsSubjectsByIds(model.subjectIds)) {
                 throw NotFoundException("Предмет не найден")
             } else {
-                val subjectForEntrance = model.subjectIds.map { SubjectsForEntranceEntity(SubjectsForEntranceId(direction.id, it)) }
-                subjectForEntranceRepository.saveAll(subjectForEntrance)
+                val subjectForEntrance = model.subjectIds.map { getSubjectsForEntranceEntity(direction.id, it) }.toMutableSet()
+                subjectForEntranceService.saveAll(subjectForEntrance)
             }
         }
         return direction
@@ -66,14 +67,20 @@ class TrainingDirectionService(private val trainingDirectionRepository: Training
     }
 
     fun getTrainingDirectionPage(model: TrainingDirectionPageRequestModel): Page<TrainingDirectionResponseModel> {
-        val ids = subjectForEntranceRepository.findByDirectionIds(model.subjectIds)
-        return trainingDirectionRepository.findPage(model, ids).map { it.toModel() }
+        return if (model.subjectIds.isNotEmpty()) {
+            val subjectForEntranceIds = subjectForEntranceService.getSubjectForEntranceByDirectionIds(model.subjectIds)
+            val ids = subjectForEntranceIds.map { it.subjectsForEntranceId.trainingDirectionId }.toMutableSet()
+            trainingDirectionRepository.findPage(model, ids).map { it.toModel() }
+        } else trainingDirectionRepository.findPage(model, null).map { it.toModel() }
     }
 
     fun deleteTrainingDirection(id: UUID) {
         if (trainingDirectionRepository.existsById(id))
             trainingDirectionRepository.deleteById(id)
     }
+
+    private fun getSubjectsForEntranceEntity(trainingDirectionID: UUID, subjectId: UUID) =
+            SubjectsForEntranceEntity(SubjectsForEntranceId(trainingDirectionID, subjectId))
 }
 
 private fun TrainingDirectionRequestModel.toEntity() = TrainingDirectionEntity(id, name, code, description, facultyId)

@@ -3,11 +3,9 @@ package com.lgorev.ksuonlineeducation.service
 import com.lgorev.ksuonlineeducation.domain.course.CourseRequestModel
 import com.lgorev.ksuonlineeducation.domain.course.CourseRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.course.CourseResponseModel
-import com.lgorev.ksuonlineeducation.domain.course.CoursesTeachersRequestModel
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.repository.course.*
-import com.lgorev.ksuonlineeducation.repository.teacher.TeacherRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -16,9 +14,7 @@ import java.util.*
 
 @Service
 @Transactional
-class CourseService(private val courseRepository: CourseRepository,
-                    private val coursesTeachersRepository: CoursesTeachersRepository,
-                    private val teachersRepository: TeacherRepository) {
+class CourseService(private val courseRepository: CourseRepository) {
 
     @Autowired
     private lateinit var educationProgramService: EducationProgramService
@@ -63,22 +59,6 @@ class CourseService(private val courseRepository: CourseRepository,
         if (courseRepository.existsById(id))
             courseRepository.deleteById(id)
     }
-
-    @Throws(NotFoundException::class, BadRequestException::class)
-    fun addTeacherToCourse(model: CoursesTeachersRequestModel) {
-        if (!courseRepository.existsById(model.courseId))
-            throw NotFoundException("Курс не найден")
-        if (!teachersRepository.existsById(model.teacherId))
-            throw NotFoundException("Преподаватель не найден не найден")
-        coursesTeachersRepository.save(model.toEntity())
-    }
-
-    fun removeTeacherFromCourse(model: CoursesTeachersRequestModel) {
-        val entity = model.toEntity()
-        if (coursesTeachersRepository.existsById(entity.coursesTeachersId)) {
-            coursesTeachersRepository.delete(entity)
-        }
-    }
 }
 
 private fun CourseRequestModel.toEntity() =
@@ -87,5 +67,4 @@ private fun CourseRequestModel.toEntity() =
 private fun CourseEntity.toModel() =
         CourseResponseModel(id, educationProgramId, status, startDate, endDate, creationDate, isActual)
 
-private fun CoursesTeachersRequestModel.toEntity() = CoursesTeachersEntity(CoursesTeachersId(courseId, teacherId))
 

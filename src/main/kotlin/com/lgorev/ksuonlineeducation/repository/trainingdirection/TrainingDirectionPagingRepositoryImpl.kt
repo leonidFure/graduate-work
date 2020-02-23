@@ -15,19 +15,18 @@ class TrainingDirectionPagingRepositoryImpl(@PersistenceContext private val em: 
     private val trainingDirection = TrainingDirectionEntity::class.java
 
 
-    override fun findPage(model: TrainingDirectionPageRequestModel, ids: MutableSet<SubjectsForEntranceEntity>   ): Page<TrainingDirectionEntity> {
+    override fun findPage(model: TrainingDirectionPageRequestModel, ids: MutableSet<UUID>?): Page<TrainingDirectionEntity> {
         val cb = em.criteriaBuilder
 
         val cq = cb.createQuery(trainingDirection)
         val root = cq.from(trainingDirection)
 
         val predicates = mutableSetOf<Predicate>()
+        if(ids != null) predicates.add(root.get<UUID>("id").`in`(ids))
         if (model.nameFilter != null)
             predicates.add(cb.like(cb.upper(root.get<String>("name")), "%${model.nameFilter.toUpperCase()}%"))
         if (model.facultyId != null)
             predicates.add(cb.equal(root.get<UUID>("facultyId"), model.facultyId))
-        if(ids.isNotEmpty())
-            predicates.add(root.get<UUID>("id").`in`(ids.map { it.subjectsForEntranceId.trainingDirectionId }))
 
 
         cq.where(cb.and(*predicates.toTypedArray()))

@@ -9,5 +9,6 @@ data class ThemeRequestPageModel(
         val sortType: Direction = Direction.ASC,
         val nameFilter: String? = null,
         val parentThemeId: UUID? = null,
-        val educationProgramId: UUID? = null
+        val educationProgramId: UUID? = null,
+        val lessonsIds: MutableSet<UUID> = mutableSetOf()
 )

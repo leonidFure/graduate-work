@@ -9,8 +9,8 @@ import com.lgorev.ksuonlineeducation.repository.lesson.LessonEntity
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonLogEntity
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonRepository
 import com.lgorev.ksuonlineeducation.util.filter
-import org.apache.tomcat.jni.Local
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -28,6 +28,8 @@ class LessonService(private val lessonRepository: LessonRepository) {
     private lateinit var courseService: CourseService
     @Autowired
     private lateinit var lessonLogService: LessonLogService
+    @Autowired
+    private lateinit var lessonsThemesService: LessonsThemesService
 
     @Throws(NotFoundException::class)
     fun getLessonById(id: UUID): LessonResponseModel {
@@ -35,7 +37,13 @@ class LessonService(private val lessonRepository: LessonRepository) {
         throw NotFoundException("Занятие не найдено")
     }
 
-    fun getLessonPage(model: LessonRequestPageModel) = lessonRepository.findLessonPage(model)
+    fun getLessonPage(model: LessonRequestPageModel): Page<LessonResponseModel> {
+        return if(model.themeIds.isNotEmpty()) {
+            val lessonsThemesIds = lessonsThemesService.getLessonsThemesByThemeIds(model.themeIds)
+            val ids = lessonsThemesIds.map { it.lessonsThemesId.lessonId }.toMutableSet()
+            lessonRepository.findLessonPage(model, ids).map { it.toModel() }
+        } else lessonRepository.findLessonPage(model, null).map { it.toModel() }
+    }
 
     @Throws(NotFoundException::class, BadRequestException::class)
     fun addLesson(model: LessonRequestModel): LessonResponseModel {

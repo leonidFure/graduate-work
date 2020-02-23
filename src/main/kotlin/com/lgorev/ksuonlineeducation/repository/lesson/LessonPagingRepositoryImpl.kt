@@ -15,17 +15,18 @@ class LessonPagingRepositoryImpl(@PersistenceContext private val em: EntityManag
 
     val lesson = LessonEntity::class.java
 
-    override fun findLessonPage(model: LessonRequestPageModel): Page<LessonEntity> {
+    override fun findLessonPage(model: LessonRequestPageModel, ids: MutableSet<UUID>?): Page<LessonEntity> {
         val cb = em.criteriaBuilder
 
         val cq = cb.createQuery(lesson)
         val root = cq.from(lesson)
 
         val predicates = mutableSetOf<Predicate>()
+        if(ids != null) predicates.add(root.get<UUID>("id").`in`(ids))
         if (model.courseId != null)
             predicates.add(cb.equal(root.get<UUID>("courseId"), model.courseId))
         if (model.timetableIds.isNotEmpty())
-                predicates.add(root.get<UUID>("timetable_id").`in`(model.timetableIds))
+            predicates.add(root.get<UUID>("timetable_id").`in`(model.timetableIds))
         if (model.fromDate != null && model.toDate != null)
             predicates.add(cb.between(root.get<LocalDate>("date"), model.fromDate, model.toDate))
         if (model.statusFilter != null)
