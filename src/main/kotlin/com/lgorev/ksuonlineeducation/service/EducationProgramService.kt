@@ -61,6 +61,7 @@ class EducationProgramService(private val educationProgramRepository: EducationP
             program.name = model.name
             program.description = model.description
             program.creationDate = model.creationDate
+            program.status = model.status
             program.isActual = model.isActual
             return program.toModel()
         }

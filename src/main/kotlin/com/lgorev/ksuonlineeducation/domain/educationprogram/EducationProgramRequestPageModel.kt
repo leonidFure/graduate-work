@@ -24,5 +24,5 @@ data class EducationProgramRequestPageModel(
         @JsonDeserialize(using = LocalDateDeserializer::class)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         val creationDateTo: LocalDate? = null,
-        val subjectId: UUID? = null
+        val subjectIds: MutableSet<UUID> = mutableSetOf()
 )

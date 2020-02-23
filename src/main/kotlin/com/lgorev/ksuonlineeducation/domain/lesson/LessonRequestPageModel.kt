@@ -15,7 +15,8 @@ data class LessonRequestPageModel(
         val pageSize: Int = 10,
         val sortType: Direction = Direction.ASC,
         val courseId: UUID? = null,
-        val timetableId: UUID? = null,
+        val timetableIds: MutableSet<UUID> = mutableSetOf(),
+        val themeIds: MutableSet<UUID> = mutableSetOf(),
         @JsonSerialize(using = LocalDateSerializer::class)
         @JsonDeserialize(using = LocalDateDeserializer::class)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

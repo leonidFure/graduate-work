@@ -17,8 +17,4 @@ data class FacultyEntity(
         @Column(name = "manager_id")
         var managerId: UUID
 
-) {
-        @OneToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "manager_id", referencedColumnName = "id", insertable = false, updatable = false)
-        val manager: UserEntity? = null
-}
+)

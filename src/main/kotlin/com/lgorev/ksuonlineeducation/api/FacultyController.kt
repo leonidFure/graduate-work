@@ -4,6 +4,7 @@ import com.lgorev.ksuonlineeducation.domain.faculty.FacultyPageRequestModel
 import com.lgorev.ksuonlineeducation.domain.faculty.FacultyRequestModel
 import com.lgorev.ksuonlineeducation.domain.faculty.TeachersFacultiesModel
 import com.lgorev.ksuonlineeducation.service.FacultyService
+import com.lgorev.ksuonlineeducation.service.TeachersFacultiesService
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -11,7 +12,8 @@ import java.util.*
 
 @RestController
 @RequestMapping("api/faculties")
-class FacultyController(private val facultyService: FacultyService) {
+class FacultyController(private val facultyService: FacultyService,
+                        private val teachersFacultiesService: TeachersFacultiesService) {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -40,9 +42,9 @@ class FacultyController(private val facultyService: FacultyService) {
 
     @PostMapping("teacher/add")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
-    fun addTeacherToFaculty(@RequestBody model: TeachersFacultiesModel) = ok(facultyService.addTeacherToFaculty(model))
+    fun addTeacherToFaculty(@RequestBody model: TeachersFacultiesModel) = ok(teachersFacultiesService.addTeacherToFaculty(model))
 
     @PostMapping("teacher/remove")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
-    fun removeTeacherFromFaculty(@RequestBody model: TeachersFacultiesModel) = ok(facultyService.removeTeacherFromFaculty(model))
+    fun removeTeacherFromFaculty(@RequestBody model: TeachersFacultiesModel) = ok(teachersFacultiesService.removeTeacherFromFaculty(model))
 }

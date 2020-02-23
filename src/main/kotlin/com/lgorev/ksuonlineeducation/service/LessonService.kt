@@ -2,17 +2,20 @@ package com.lgorev.ksuonlineeducation.service
 
 import com.lgorev.ksuonlineeducation.domain.lesson.*
 import com.lgorev.ksuonlineeducation.domain.timetable.TimetableResponseModel
+import com.lgorev.ksuonlineeducation.domain.timetable.TimetableType
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonEntity
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonLogEntity
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonRepository
 import com.lgorev.ksuonlineeducation.util.filter
+import org.apache.tomcat.jni.Local
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.time.temporal.WeekFields
 import java.util.*
 
 @Service
@@ -77,10 +80,14 @@ class LessonService(private val lessonRepository: LessonRepository) {
         val courseId = timetables.first().courseId
         val course = courseService.getCourseById(courseId)
         val courseRange = (course.startDate..course.endDate)
-
+        val weekFields = WeekFields.of(Locale.getDefault())
         timetables.forEach { t ->
             lessons.addAll(courseRange
-                    .filter { day -> day.dayOfWeek == t.dayOfWeek }
+                    .filter { day ->
+                        (t.type == TimetableType.EVEN && day[weekFields.weekOfWeekBasedYear()] % 2 == 0 ||
+                                t.type == TimetableType.ODD && day[weekFields.weekOfWeekBasedYear()] % 2 != 0 ||
+                                t.type == TimetableType.EVERY_WEEK) && day.dayOfWeek == t.dayOfWeek
+                    }
                     .map { day -> LessonEntity(UUID.randomUUID(), courseId, t.id, day, LessonStatus.CREATED) }
             )
         }

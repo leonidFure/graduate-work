@@ -1,5 +1,5 @@
 package com.lgorev.ksuonlineeducation.repository.faculty
 
-import org.springframework.data.repository.CrudRepository
+import org.springframework.data.jpa.repository.JpaRepository
 
-interface TeachersFacultiesRepository : CrudRepository<TeachersFacultiesEntity, TeachersFacultiesId>
+interface TeachersFacultiesRepository : JpaRepository<TeachersFacultiesEntity, TeachersFacultiesId>

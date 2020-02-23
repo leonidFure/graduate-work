@@ -28,8 +28,8 @@ class EducationProgramPagingRepositoryImpl(@PersistenceContext private val em: E
             predicates.add(cb.equal(root.get<Boolean>("isActual"), model.actualFilter))
         if (model.statusFilter != null)
             predicates.add(cb.equal(root.get<EducationProgramStatus>("status"), model.statusFilter))
-        if(model.subjectId != null)
-            predicates.add(cb.equal(root.get<UUID>("subjectId"), model.subjectId))
+        if(model.subjectIds.isNotEmpty())
+            predicates.add(root.get<UUID>("subject_id").`in`(model.subjectIds))
         if(model.creationDateFrom != null && model.creationDateTo != null)
             predicates.add(cb.between(root.get<LocalDate>("creationDate"), model.creationDateFrom, model.creationDateTo))
 
