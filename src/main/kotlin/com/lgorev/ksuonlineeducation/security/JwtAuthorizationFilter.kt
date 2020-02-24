@@ -26,9 +26,7 @@ class JwtAuthorizationFilter(authenticationManager: AuthenticationManager) :
                                   response: HttpServletResponse,
                                   chain: FilterChain) {
         val authentication = getAuthentication(request)
-        authentication?.let {
-            SecurityContextHolder.getContext().authentication = authentication
-        }
+        authentication?.let { SecurityContextHolder.getContext().authentication = authentication }
         chain.doFilter(request, response)
     }
 
@@ -46,9 +44,11 @@ class JwtAuthorizationFilter(authenticationManager: AuthenticationManager) :
                         .replace("([\\[\\]])".toRegex(), "")
                         .split(", ")
                 val userIdClaim = parsedToken.body[USER_ID_CLAIM]
+                val sessionIdClaim = parsedToken.body[SESSION_ID_CLAIM]
+                val sessionId = sessionIdClaim?.toString()
                 val userId = userIdClaim?.toString()
                 val grantedAuthorities = roles.map { SimpleGrantedAuthority(it) }
-                val tokenCredentialContainer = TokenCredentialContainer(UUID.fromString(userId), token)
+                val tokenCredentialContainer = TokenCredentialContainer(UUID.fromString(userId), UUID.fromString(sessionId), token)
                 return UsernamePasswordAuthenticationToken(username, tokenCredentialContainer, grantedAuthorities)
             } catch (e: ExpiredJwtException) {
                 log.warn("Request to parse expired JWT : $token failed : ${e.message}")

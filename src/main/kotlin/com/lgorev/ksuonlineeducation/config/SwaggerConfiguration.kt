@@ -38,6 +38,7 @@ class SwaggerConfiguration {
                 .securityReferences(defaultAuth())
                 .forPaths(PathSelectors.regex("/api/.*"))
                 .forPaths(Predicates.not(PathSelectors.regex("/api/auth.*")))
+                .forPaths(PathSelectors.regex("/api/auth/refresh"))
                 .build()
     }
 

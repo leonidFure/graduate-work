@@ -2,4 +2,4 @@ package com.lgorev.ksuonlineeducation.security
 
 import java.util.*
 
-data class TokenCredentialContainer(val id: UUID?, val token: String?)
+data class TokenCredentialContainer(val userId: UUID?, val sessionId: UUID, val token: String?)
