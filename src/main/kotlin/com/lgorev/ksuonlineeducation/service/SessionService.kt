@@ -14,10 +14,9 @@ class SessionService (private val sessionRepository: SessionRepository) {
 
     fun addSession(entity: SessionEntity) = sessionRepository.save(entity)
 
-    fun updateSession(id: UUID, token: String, expirationDateTime: LocalDateTime) {
+    fun updateSession(id: UUID, expirationDateTime: LocalDateTime) {
         sessionRepository.findByIdOrNull(id)?.let { session ->
             session.expirationDatetime = expirationDateTime
-            session.token = token
         }
     }
 

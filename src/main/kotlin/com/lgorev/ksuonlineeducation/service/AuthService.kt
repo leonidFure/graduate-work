@@ -44,7 +44,6 @@ class AuthService(private val userRepository: UserRepository) {
                 val session = SessionEntity(
                         sessionId,
                         user.id,
-                        refreshToken ?: "",
                         LocalDateTime.now().plusSeconds(REFRESH_TOKEN_LIFETIME_SECONDS)
                 )
                 sessionService.addSession(session)
@@ -84,7 +83,7 @@ class AuthService(private val userRepository: UserRepository) {
             val accessToken = generateAccessToken(user.id, user.username, user.roles, sessionId)
             val refreshToken = generateRefreshToken(user.id, user.username, sessionId)
             val refreshTokenExpirationTime = LocalDateTime.now().plusSeconds(REFRESH_TOKEN_LIFETIME_SECONDS)
-            sessionService.updateSession(sessionId, refreshToken ?: "", refreshTokenExpirationTime)
+            sessionService.updateSession(sessionId, refreshTokenExpirationTime)
             return TokenResponseModel(
                     accessToken,
                     refreshToken,

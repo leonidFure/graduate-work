@@ -15,8 +15,6 @@ data class SessionEntity(
         val id: UUID,
         @Column(name = "user_id")
         val userId: UUID,
-        @Column(name = "token")
-        var token: String,
         @Column(name = "expiration_datetime")
         var expirationDatetime: LocalDateTime
 )

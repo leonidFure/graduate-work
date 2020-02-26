@@ -48,7 +48,7 @@ class JwtAuthorizationFilter(authenticationManager: AuthenticationManager) :
                 val sessionId = sessionIdClaim?.toString()
                 val userId = userIdClaim?.toString()
                 val grantedAuthorities = roles.map { SimpleGrantedAuthority(it) }
-                val tokenCredentialContainer = TokenCredentialContainer(UUID.fromString(userId), UUID.fromString(sessionId), token)
+                val tokenCredentialContainer = TokenCredentialContainer(UUID.fromString(userId), UUID.fromString(sessionId))
                 return UsernamePasswordAuthenticationToken(username, tokenCredentialContainer, grantedAuthorities)
             } catch (e: ExpiredJwtException) {
                 log.warn("Request to parse expired JWT : $token failed : ${e.message}")
