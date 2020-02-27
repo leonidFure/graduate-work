@@ -9,12 +9,13 @@ import com.lgorev.ksuonlineeducation.service.AuthService
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.oauth2.core.user.OAuth2User
+import org.springframework.web.bind.annotation.*
 import java.security.Principal
+import java.util.*
 import javax.annotation.security.PermitAll
+
 
 @RestController
 @RequestMapping("api/auth")
@@ -49,9 +50,10 @@ class AuthController(private val authService: AuthService) {
     }
 
     @PermitAll
-    @PostMapping("login/google")
-    fun loginWithGoogle(@RequestBody modelUser: UserLoginModel) {
-
+    @GetMapping("/user")
+    fun user(@AuthenticationPrincipal principal: OAuth2User): Map<String?, Any?>? {
+        print("")
+        return Collections.singletonMap("name", principal.getAttribute("name"))
     }
 //    TODO("Добавить Oauth 2.0, функционал выхода из системы, рефреша токена, авторизации с помощью ВК и Google")
 }
