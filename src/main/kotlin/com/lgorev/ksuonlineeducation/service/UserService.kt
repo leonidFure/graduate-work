@@ -54,7 +54,7 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
         }
         throw NotFoundException("Пользователь не найден")
     }
-
+    fun existUserById(id: UUID) = userRepository.existsById(id)
 }
 
 
