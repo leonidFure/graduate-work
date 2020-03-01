@@ -28,6 +28,8 @@ class EducationProgramService(private val educationProgramRepository: EducationP
         throw NotFoundException("Программа обучения не найдена")
     }
 
+    fun getEducationProgramsByIds(ids: MutableIterable<UUID>) = educationProgramRepository.findAllById(ids).map { it.toModel() }
+
     fun existEducationProgramById(id: UUID) = educationProgramRepository.existsById(id)
 
     @Throws(BadRequestException::class)

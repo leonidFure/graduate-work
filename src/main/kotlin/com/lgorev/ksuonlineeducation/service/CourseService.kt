@@ -7,6 +7,7 @@ import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.repository.course.*
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,12 +22,27 @@ class CourseService(private val courseRepository: CourseRepository) {
 
     @Throws(NotFoundException::class)
     fun getCourseById(id: UUID): CourseResponseModel {
-        courseRepository.findByIdOrNull(id)?.let { return it.toModel() }
+        val courseEntity = courseRepository.findByIdOrNull(id)
+        if (courseEntity != null) {
+            val model = courseEntity.toModel()
+            val educationProgram = educationProgramService.getEducationProgramById(courseEntity.educationProgramId)
+            model.educationProgram = educationProgram
+            return model
+        }
         throw NotFoundException("Курс не найден")
     }
 
-    fun getCoursePage(model: CourseRequestPageModel) =
-            courseRepository.findPage(model).map { it.toModel() }
+    fun getCoursePage(model: CourseRequestPageModel): Page<CourseResponseModel> {
+        val courses = courseRepository.findPage(model)
+        val ids = courses.map { it.educationProgramId }
+        val educationPrograms = educationProgramService.getEducationProgramsByIds(ids)
+        val result = courses.map { it.toModel() }
+        result.forEach { c ->
+            c.educationProgram = educationPrograms
+                    .find { ed -> ed.id == c.educationProgramId }
+        }
+        return result
+    }
 
     fun existCourseById(id: UUID) = courseRepository.existsById(id)
 
@@ -65,6 +81,6 @@ private fun CourseRequestModel.toEntity() =
         CourseEntity(id, educationProgramId, status, startDate, endDate, creationDate, isActual)
 
 private fun CourseEntity.toModel() =
-        CourseResponseModel(id, educationProgramId, status, startDate, endDate, creationDate, isActual)
+        CourseResponseModel(id, educationProgramId, null, status, startDate, endDate, creationDate, isActual)
 
 

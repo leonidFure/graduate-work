@@ -8,8 +8,10 @@ import com.lgorev.ksuonlineeducation.repository.course.CourseSubscriptionReposit
 import javassist.NotFoundException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional
 class CourseSubscriptionService(private val courseSubscriptionRepository: CourseSubscriptionRepository) {
 
     @Autowired
