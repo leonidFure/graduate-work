@@ -60,7 +60,7 @@ class CourseController(private val courseService: CourseService,
         courseSubscriptionService.subscribeUserOnCourse(model)
     }
 
-    @PostMapping("subscribe")
+    @PostMapping("unsubscribe")
     @PreAuthorize("hasAuthority('STUDENT')")
     fun unsubscribe(@RequestBody model: CourseSubscriptionModel, principal: Principal) {
         val userId = getUserId(principal)
