@@ -3,10 +3,7 @@ package com.lgorev.ksuonlineeducation.repository.course
 import com.lgorev.ksuonlineeducation.domain.course.CourseStatus
 import java.time.LocalDate
 import java.util.*
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.Table
+import javax.persistence.*
 
 @Entity
 @Table(name = "course")
@@ -17,6 +14,7 @@ data class CourseEntity(
         @Column(name = "education_program_id")
         var educationProgramId: UUID,
         @Column(name = "status")
+        @Enumerated(value = EnumType.STRING)
         var status: CourseStatus,
         @Column(name = "start_date")
         var startDate: LocalDate,

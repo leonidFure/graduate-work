@@ -8,6 +8,5 @@ data class UserRequestModel(
         val lastName: String,
         val patronymic: String?,
         val email: String,
-        val password: String,
-        val roles: MutableSet<Role>
+        val password: String
 )

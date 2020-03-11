@@ -141,7 +141,7 @@ private fun UserRequestModel.toUserEntity(): UserEntity {
             BCrypt.hashpw(password, BCrypt.gensalt(12)),
             true,
             LocalDate.now(),
-            roles.map { UserRoleEntity(UserRoleId(userId, it)) }.toMutableSet()
+            mutableSetOf(UserRoleEntity(UserRoleId(userId, Role.STUDENT)))
     )
 }
 

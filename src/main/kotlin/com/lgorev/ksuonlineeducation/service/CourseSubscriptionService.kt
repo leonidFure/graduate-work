@@ -9,6 +9,7 @@ import javassist.NotFoundException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Service
 @Transactional
@@ -37,6 +38,8 @@ class CourseSubscriptionService(private val courseSubscriptionRepository: Course
         if (courseSubscriptionRepository.existsById(id))
             courseSubscriptionRepository.deleteById(id)
     }
+
+    fun getByUserId(id: UUID) = courseSubscriptionRepository.findByUserId(id)
 }
 
 private fun CourseSubscriptionModel.toEntity() = CourseSubscriptionEntity(CourseSubscriptionId(courseId, userId))

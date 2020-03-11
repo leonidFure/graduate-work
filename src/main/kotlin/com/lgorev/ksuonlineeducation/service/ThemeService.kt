@@ -1,5 +1,7 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
+import com.lgorev.ksuonlineeducation.domain.common.map
 import com.lgorev.ksuonlineeducation.domain.theme.ThemeRequestModel
 import com.lgorev.ksuonlineeducation.domain.theme.ThemeRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.theme.ThemeResponseModel
@@ -28,7 +30,7 @@ class ThemeService(private val themeRepository: ThemeRepository) {
         throw NotFoundException("Тема не найдена")
     }
 
-    fun getThemePage(model: ThemeRequestPageModel): Page<ThemeResponseModel> {
+    fun getThemePage(model: ThemeRequestPageModel): PageResponseModel<ThemeResponseModel> {
         return if(model.lessonsIds.isNotEmpty()) {
             val lessonsThemesIds = lessonsThemesService.getLessonsThemesByLessonIds(model.lessonsIds)
             val ids = lessonsThemesIds.map { it.lessonsThemesId.themesId }.toMutableSet()

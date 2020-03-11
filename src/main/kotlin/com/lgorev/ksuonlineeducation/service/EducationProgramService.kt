@@ -1,5 +1,7 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
+import com.lgorev.ksuonlineeducation.domain.common.map
 import com.lgorev.ksuonlineeducation.domain.educationprogram.EducationProgramRequestModel
 import com.lgorev.ksuonlineeducation.domain.educationprogram.EducationProgramRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.educationprogram.EducationProgramResponseModel
@@ -33,7 +35,7 @@ class EducationProgramService(private val educationProgramRepository: EducationP
     fun existEducationProgramById(id: UUID) = educationProgramRepository.existsById(id)
 
     @Throws(BadRequestException::class)
-    fun getPage(model: EducationProgramRequestPageModel): Page<EducationProgramResponseModel> {
+    fun getPage(model: EducationProgramRequestPageModel): PageResponseModel<EducationProgramResponseModel> {
         if (model.creationDateFrom != null && model.creationDateTo != null && model.creationDateFrom.isBefore(model.creationDateTo))
             throw BadRequestException("Промежуток задан некоректно")
         return educationProgramRepository.findPage(model).map { it.toModel() }

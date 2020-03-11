@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.repository.lesson
 
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonStatus
 import org.springframework.data.domain.Page
@@ -15,18 +16,19 @@ class LessonPagingRepositoryImpl(@PersistenceContext private val em: EntityManag
 
     val lesson = LessonEntity::class.java
 
-    override fun findLessonPage(model: LessonRequestPageModel, ids: MutableSet<UUID>?): Page<LessonEntity> {
+    override fun findLessonPage(model: LessonRequestPageModel, ids: MutableSet<UUID>?): PageResponseModel<LessonEntity> {
         val cb = em.criteriaBuilder
 
         val cq = cb.createQuery(lesson)
         val root = cq.from(lesson)
+        val countQuery = cb.createQuery(Long::class.java)
 
         val predicates = mutableSetOf<Predicate>()
-        if(ids != null) predicates.add(root.get<UUID>("id").`in`(ids))
+        if (ids != null) predicates.add(root.get<UUID>("id").`in`(ids))
         if (model.courseId != null)
             predicates.add(cb.equal(root.get<UUID>("courseId"), model.courseId))
         if (model.timetableIds.isNotEmpty())
-            predicates.add(root.get<UUID>("timetable_id").`in`(model.timetableIds))
+            predicates.add(root.get<UUID>("timetableId").`in`(model.timetableIds))
         if (model.fromDate != null && model.toDate != null)
             predicates.add(cb.between(root.get<LocalDate>("date"), model.fromDate, model.toDate))
         if (model.statusFilter != null)
@@ -38,11 +40,16 @@ class LessonPagingRepositoryImpl(@PersistenceContext private val em: EntityManag
         else
             cq.orderBy(cb.asc(root.get<String>("date")))
 
+        countQuery.select(cb.count(countQuery.from(lesson)))
+        countQuery.where(cb.and(*predicates.toTypedArray()))
         val typedQuery = em.createQuery(cq)
         typedQuery.firstResult = (model.pageNum) * model.pageSize
         typedQuery.maxResults = model.pageSize
 
-        return PageImpl<LessonEntity>(typedQuery.resultList)
+        val query = em.createQuery(countQuery)
+        val count = query.singleResult
+        val resultList = typedQuery.resultList
+        return PageResponseModel(resultList.toMutableSet(), count ?: 0)
 
     }
 }

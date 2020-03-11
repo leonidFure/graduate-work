@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.repository.theme
 
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
 import com.lgorev.ksuonlineeducation.domain.theme.ThemeRequestPageModel
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -13,11 +14,12 @@ class ThemePagingRepositoryImpl(@PersistenceContext private val em: EntityManage
 
     private val theme = ThemeEntity::class.java
 
-    override fun findPage(model: ThemeRequestPageModel, ids: MutableSet<UUID>?): Page<ThemeEntity> {
+    override fun findPage(model: ThemeRequestPageModel, ids: MutableSet<UUID>?): PageResponseModel<ThemeEntity> {
         val cb = em.criteriaBuilder
 
         val cq = cb.createQuery(theme)
         val root = cq.from(theme)
+        val countQuery = cb.createQuery(Long::class.java)
 
         val predicates = mutableSetOf<Predicate>()
         if(ids != null) predicates.add(root.get<UUID>("id").`in`(ids))
@@ -33,10 +35,15 @@ class ThemePagingRepositoryImpl(@PersistenceContext private val em: EntityManage
         else
             cq.orderBy(cb.asc(root.get<String>("name")))
 
+        countQuery.select(cb.count(countQuery.from(theme)))
+        countQuery.where(cb.and(*predicates.toTypedArray()))
         val typedQuery = em.createQuery(cq)
         typedQuery.firstResult = (model.pageNum) * model.pageSize
         typedQuery.maxResults = model.pageSize
 
-        return PageImpl<ThemeEntity>(typedQuery.resultList)
+        val query = em.createQuery(countQuery)
+        val count = query.singleResult
+        val resultList = typedQuery.resultList
+        return PageResponseModel(resultList.toMutableSet(), count ?: 0)
     }
 }

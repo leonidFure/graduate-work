@@ -12,7 +12,7 @@ import java.util.*
 data class CourseRequestModel(
         val id: UUID = UUID.randomUUID(),
         val educationProgramId: UUID,
-        val status: CourseStatus = CourseStatus.AWAIT_STUDENTS,
+        val status: CourseStatus = CourseStatus.COURSE_AWAIT_STUDENTS,
         @JsonSerialize(using = LocalDateSerializer::class)
         @JsonDeserialize(using = LocalDateDeserializer::class)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -28,4 +28,4 @@ data class CourseRequestModel(
         val isActual: Boolean = true
 )
 
-enum class CourseStatus { AWAIT_STUDENTS, IN_PROGRESS, DONE }
+enum class CourseStatus { COURSE_AWAIT_STUDENTS, COURSE_IN_PROGRESS, COURSE_DONE }

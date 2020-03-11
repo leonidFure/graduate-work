@@ -1,9 +1,8 @@
 package com.lgorev.ksuonlineeducation.repository.educationprogram
 
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
 import com.lgorev.ksuonlineeducation.domain.educationprogram.EducationProgramRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.educationprogram.EducationProgramStatus
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Sort
 import java.time.LocalDate
 import java.util.*
@@ -15,11 +14,12 @@ class EducationProgramPagingRepositoryImpl(@PersistenceContext private val em: E
 
     private val educationProgram = EducationProgramEntity::class.java
 
-    override fun findPage(model: EducationProgramRequestPageModel): Page<EducationProgramEntity> {
+    override fun findPage(model: EducationProgramRequestPageModel): PageResponseModel<EducationProgramEntity> {
         val cb = em.criteriaBuilder
 
         val cq = cb.createQuery(educationProgram)
         val root = cq.from(educationProgram)
+        val countQuery = cb.createQuery(Long::class.java)
 
         val predicates = mutableSetOf<Predicate>()
         if (model.nameFilter != null)
@@ -28,9 +28,9 @@ class EducationProgramPagingRepositoryImpl(@PersistenceContext private val em: E
             predicates.add(cb.equal(root.get<Boolean>("isActual"), model.actualFilter))
         if (model.statusFilter != null)
             predicates.add(cb.equal(root.get<EducationProgramStatus>("status"), model.statusFilter))
-        if(model.subjectIds.isNotEmpty())
-            predicates.add(root.get<UUID>("subject_id").`in`(model.subjectIds))
-        if(model.creationDateFrom != null && model.creationDateTo != null)
+        if (model.subjectIds.isNotEmpty())
+            predicates.add(root.get<UUID>("subjectId").`in`(model.subjectIds))
+        if (model.creationDateFrom != null && model.creationDateTo != null)
             predicates.add(cb.between(root.get<LocalDate>("creationDate"), model.creationDateFrom, model.creationDateTo))
 
         cq.where(cb.and(*predicates.toTypedArray()))
@@ -38,11 +38,15 @@ class EducationProgramPagingRepositoryImpl(@PersistenceContext private val em: E
             cq.orderBy(cb.desc(root.get<LocalDate>("creationDate")))
         else
             cq.orderBy(cb.asc(root.get<LocalDate>("creationDate")))
-
+        countQuery.select(cb.count(countQuery.from(educationProgram)))
+        countQuery.where(cb.and(*predicates.toTypedArray()))
         val typedQuery = em.createQuery(cq)
         typedQuery.firstResult = (model.pageNum) * model.pageSize
         typedQuery.maxResults = model.pageSize
-
-        return PageImpl<EducationProgramEntity>(typedQuery.resultList)
+        val query = em.createQuery(countQuery)
+        val count = query.singleResult
+        val resultList = typedQuery.resultList
+        return PageResponseModel(resultList.toMutableSet(), count ?: 0)
     }
+
 }

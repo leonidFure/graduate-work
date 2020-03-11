@@ -1,5 +1,7 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
+import com.lgorev.ksuonlineeducation.domain.common.map
 import com.lgorev.ksuonlineeducation.domain.lesson.*
 import com.lgorev.ksuonlineeducation.domain.timetable.TimetableResponseModel
 import com.lgorev.ksuonlineeducation.domain.timetable.TimetableType
@@ -37,7 +39,7 @@ class LessonService(private val lessonRepository: LessonRepository) {
         throw NotFoundException("Занятие не найдено")
     }
 
-    fun getLessonPage(model: LessonRequestPageModel): Page<LessonResponseModel> {
+    fun getLessonPage(model: LessonRequestPageModel): PageResponseModel<LessonResponseModel> {
         return if(model.themeIds.isNotEmpty()) {
             val lessonsThemesIds = lessonsThemesService.getLessonsThemesByThemeIds(model.themeIds)
             val ids = lessonsThemesIds.map { it.lessonsThemesId.lessonId }.toMutableSet()
@@ -60,7 +62,7 @@ class LessonService(private val lessonRepository: LessonRepository) {
 
         val lesson = lessonRepository.save(model.toEntity()).toModel()
 
-        val lessonLog = LessonLogModel(model.id, LocalDateTime.now(), null, LessonStatus.CREATED)
+        val lessonLog = LessonLogModel(model.id, LocalDateTime.now(), null, LessonStatus.LESSON_CREATED)
         lessonLogService.addLessonLog(lessonLog)
 
         return lesson
@@ -96,12 +98,12 @@ class LessonService(private val lessonRepository: LessonRepository) {
                                 t.type == TimetableType.ODD && day[weekFields.weekOfWeekBasedYear()] % 2 != 0 ||
                                 t.type == TimetableType.EVERY_WEEK) && day.dayOfWeek == t.dayOfWeek
                     }
-                    .map { day -> LessonEntity(UUID.randomUUID(), courseId, t.id, day, LessonStatus.CREATED) }
+                    .map { day -> LessonEntity(UUID.randomUUID(), courseId, t.id, day, LessonStatus.LESSON_CREATED) }
             )
         }
 
         val lessonEntities = lessonRepository.saveAll(lessons)
-        val lessonsLog = lessonEntities.map { l -> LessonLogEntity(UUID.randomUUID(), l.id, LocalDateTime.now(), null, LessonStatus.CREATED) }
+        val lessonsLog = lessonEntities.map { l -> LessonLogEntity(UUID.randomUUID(), l.id, LocalDateTime.now(), null, LessonStatus.LESSON_CREATED) }
 
         lessonLogService.addLessonsLog(lessonsLog)
     }

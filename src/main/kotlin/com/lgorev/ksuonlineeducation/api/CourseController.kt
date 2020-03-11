@@ -1,13 +1,13 @@
 package com.lgorev.ksuonlineeducation.api
 
-import com.lgorev.ksuonlineeducation.domain.course.CourseRequestModel
-import com.lgorev.ksuonlineeducation.domain.course.CourseRequestPageModel
-import com.lgorev.ksuonlineeducation.domain.course.CourseSubscriptionModel
-import com.lgorev.ksuonlineeducation.domain.course.CoursesTeachersRequestModel
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
+import com.lgorev.ksuonlineeducation.domain.course.*
 import com.lgorev.ksuonlineeducation.service.CourseService
 import com.lgorev.ksuonlineeducation.service.CourseSubscriptionService
 import com.lgorev.ksuonlineeducation.service.CoursesTeachersService
 import com.lgorev.ksuonlineeducation.util.getUserId
+import org.springframework.data.domain.Page
+import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -27,6 +27,16 @@ class CourseController(private val courseService: CourseService,
     @PostMapping("page")
     @PreAuthorize("isAuthenticated()")
     fun getPage(@RequestBody model: CourseRequestPageModel) = ok(courseService.getCoursePage(model))
+
+    @PostMapping("/self/page")
+    @PreAuthorize("isAuthenticated()")
+    fun getPage(
+            @RequestBody model: CourseRequestPageModel,
+            principal: Principal
+    ): ResponseEntity<PageResponseModel<CourseResponseModel>> {
+        val userId = getUserId(principal)
+        return ok(courseService.getCoursePage(model, userId))
+    }
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
@@ -55,7 +65,7 @@ class CourseController(private val courseService: CourseService,
     @PreAuthorize("hasAuthority('STUDENT')")
     fun subscribe(@RequestBody model: CourseSubscriptionModel, principal: Principal) {
         val userId = getUserId(principal)
-        if(userId != null)
+        if (userId != null)
             model.userId = userId
         courseSubscriptionService.subscribeUserOnCourse(model)
     }
@@ -64,7 +74,7 @@ class CourseController(private val courseService: CourseService,
     @PreAuthorize("hasAuthority('STUDENT')")
     fun unsubscribe(@RequestBody model: CourseSubscriptionModel, principal: Principal) {
         val userId = getUserId(principal)
-        if(userId != null)
+        if (userId != null)
             model.userId = userId
         courseSubscriptionService.unsubscribeUserFromCourse(model)
     }

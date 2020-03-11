@@ -1,5 +1,7 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
+import com.lgorev.ksuonlineeducation.domain.common.map
 import com.lgorev.ksuonlineeducation.domain.trainingdirection.TrainingDirectionPageRequestModel
 import com.lgorev.ksuonlineeducation.domain.trainingdirection.TrainingDirectionRequestModel
 import com.lgorev.ksuonlineeducation.domain.trainingdirection.TrainingDirectionResponseModel
@@ -66,7 +68,7 @@ class TrainingDirectionService(private val trainingDirectionRepository: Training
         throw NotFoundException(message = "Направление не неайдено")
     }
 
-    fun getTrainingDirectionPage(model: TrainingDirectionPageRequestModel): Page<TrainingDirectionResponseModel> {
+    fun getTrainingDirectionPage(model: TrainingDirectionPageRequestModel): PageResponseModel<TrainingDirectionResponseModel> {
         return if (model.subjectIds.isNotEmpty()) {
             val subjectForEntranceIds = subjectForEntranceService.getSubjectForEntranceByDirectionIds(model.subjectIds)
             val ids = subjectForEntranceIds.map { it.subjectsForEntranceId.trainingDirectionId }.toMutableSet()

@@ -1,5 +1,7 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
+import com.lgorev.ksuonlineeducation.domain.common.map
 import com.lgorev.ksuonlineeducation.domain.course.CourseRequestModel
 import com.lgorev.ksuonlineeducation.domain.course.CourseRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.course.CourseResponseModel
@@ -19,6 +21,8 @@ class CourseService(private val courseRepository: CourseRepository) {
 
     @Autowired
     private lateinit var educationProgramService: EducationProgramService
+    @Autowired
+    private lateinit var courseSubscriptionService: CourseSubscriptionService
 
     @Throws(NotFoundException::class)
     fun getCourseById(id: UUID): CourseResponseModel {
@@ -32,15 +36,20 @@ class CourseService(private val courseRepository: CourseRepository) {
         throw NotFoundException("Курс не найден")
     }
 
-    fun getCoursePage(model: CourseRequestPageModel): Page<CourseResponseModel> {
+    fun getCoursePage(model: CourseRequestPageModel, userId: UUID? = null): PageResponseModel<CourseResponseModel> {
+        if (userId != null) {
+            val subscribers = courseSubscriptionService.getByUserId(userId)
+            model.ids = subscribers.map { it.id.courseId }.toMutableSet()
+        }
         val courses = courseRepository.findPage(model)
-        val ids = courses.map { it.educationProgramId }
+        val ids = courses.content.map { it.educationProgramId }.toMutableList()
         val educationPrograms = educationProgramService.getEducationProgramsByIds(ids)
         val result = courses.map { it.toModel() }
-        result.forEach { c ->
+        result.content.forEach { c ->
             c.educationProgram = educationPrograms
                     .find { ed -> ed.id == c.educationProgramId }
         }
+
         return result
     }
 

@@ -1,5 +1,7 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
+import com.lgorev.ksuonlineeducation.domain.common.map
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectResponseModel
@@ -53,7 +55,7 @@ class SubjectService(private val subjectRepository: SubjectRepository) {
 
     fun existsSubjectsByIds(ids: MutableSet<UUID>) = subjectRepository.existsByIdIn(ids)
 
-    fun getSubjectPage(model: SubjectRequestPageModel): Page<SubjectResponseModel> {
+    fun getSubjectPage(model: SubjectRequestPageModel): PageResponseModel<SubjectResponseModel> {
         return if(model.trainingDirectionIds.isNotEmpty()) {
             val subjectForEntranceIds = subjectForEntranceService.getSubjectForEntranceByDirectionIds(model.trainingDirectionIds)
             val ids = subjectForEntranceIds.map { it.subjectsForEntranceId.subjectId }.toMutableSet()
