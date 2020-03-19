@@ -3,8 +3,6 @@ package com.lgorev.ksuonlineeducation.repository.course
 import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
 import com.lgorev.ksuonlineeducation.domain.course.CourseRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.educationprogram.EducationProgramStatus
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Sort
 import java.time.LocalDate
 import java.util.*

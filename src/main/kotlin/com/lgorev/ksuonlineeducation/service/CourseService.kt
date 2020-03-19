@@ -23,6 +23,8 @@ class CourseService(private val courseRepository: CourseRepository) {
     private lateinit var educationProgramService: EducationProgramService
     @Autowired
     private lateinit var courseSubscriptionService: CourseSubscriptionService
+    @Autowired
+    private lateinit var courseReviewService: CourseReviewService
 
     @Throws(NotFoundException::class)
     fun getCourseById(id: UUID): CourseResponseModel {
@@ -30,6 +32,8 @@ class CourseService(private val courseRepository: CourseRepository) {
         if (courseEntity != null) {
             val model = courseEntity.toModel()
             val educationProgram = educationProgramService.getEducationProgramById(courseEntity.educationProgramId)
+            model.rating = courseReviewService.getCourseRating(model.id).rating
+            model.ratingCount = courseReviewService.getCourseRating(model.id).count
             model.educationProgram = educationProgram
             return model
         }
@@ -43,11 +47,16 @@ class CourseService(private val courseRepository: CourseRepository) {
         }
         val courses = courseRepository.findPage(model)
         val ids = courses.content.map { it.educationProgramId }.toMutableList()
+        val courseIds = courses.content.map { it.id }.toMutableSet()
         val educationPrograms = educationProgramService.getEducationProgramsByIds(ids)
+        val ratings = courseReviewService.getCoursesRating(courseIds)
         val result = courses.map { it.toModel() }
         result.content.forEach { c ->
             c.educationProgram = educationPrograms
                     .find { ed -> ed.id == c.educationProgramId }
+            val rating = ratings.find { r -> r.courseId == c.id }
+            c.rating = rating?.rating ?: 0.0
+            c.ratingCount = rating?.count ?: 0
         }
 
         return result
@@ -90,6 +99,15 @@ private fun CourseRequestModel.toEntity() =
         CourseEntity(id, educationProgramId, status, startDate, endDate, creationDate, isActual)
 
 private fun CourseEntity.toModel() =
-        CourseResponseModel(id, educationProgramId, null, status, startDate, endDate, creationDate, isActual)
+        CourseResponseModel(
+                id,
+                educationProgramId,
+                null,
+                status,
+                startDate,
+                endDate,
+                creationDate,
+                isActual,
+                "/api/files/course/open?id=${id}")
 
 

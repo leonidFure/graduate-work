@@ -32,7 +32,9 @@ data class UserEntity(
                 fetch = FetchType.EAGER
         )
         @JoinColumn(name = "user_id", referencedColumnName = "id")
-        var roles: MutableSet<UserRoleEntity> = mutableSetOf()
+        var roles: MutableSet<UserRoleEntity> = mutableSetOf(),
+        @Column(name = "photo_exists")
+        var photoExists: Boolean
 
 ) {
     @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)

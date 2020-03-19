@@ -37,6 +37,10 @@ class CourseReviewService(private val courseReviewRepository: CourseReviewReposi
         if (courseReviewRepository.existsById(id))
             courseReviewRepository.deleteById(id)
     }
+
+    fun getCourseRating(id: UUID) = courseReviewRepository.findAllByCourseId(id)
+
+    fun getCoursesRating(ids: MutableSet<UUID>) = courseReviewRepository.findAllByCourseIds(ids)
 }
 
 private fun CourseReviewModel.toEntity() =

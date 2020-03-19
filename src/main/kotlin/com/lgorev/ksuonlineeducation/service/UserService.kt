@@ -54,11 +54,26 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
         }
         throw NotFoundException("Пользователь не найден")
     }
+
     fun existUserById(id: UUID) = userRepository.existsById(id)
+
+    fun setUserPhotoExists(id: UUID) {
+        userRepository.findByIdOrNull(id)?.let { user ->
+            user.photoExists = true
+        }
+    }
 }
 
 
-fun UserEntity.toModel() = UserResponseModel(id, firstName, lastName, patronymic, email, roles.map { it.userRoleId.role }.toMutableSet(), teacher?.toModel())
+fun UserEntity.toModel() = UserResponseModel(
+        id,
+        firstName,
+        lastName,
+        patronymic,
+        email,
+        roles.map { it.userRoleId.role }.toMutableSet(),
+        teacher?.toModel(),
+        "/api/files/avatar/open?id=${id}")
 
 private fun TeacherEntity.toModel() = TeacherModel(startWorkDate, info)
 

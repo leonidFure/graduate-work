@@ -141,7 +141,8 @@ private fun UserRequestModel.toUserEntity(): UserEntity {
             BCrypt.hashpw(password, BCrypt.gensalt(12)),
             true,
             LocalDate.now(),
-            mutableSetOf(UserRoleEntity(UserRoleId(userId, Role.STUDENT)))
+            mutableSetOf(UserRoleEntity(UserRoleId(userId, Role.STUDENT))),
+            false
     )
 }
 
@@ -156,7 +157,8 @@ private fun TeacherRequestModel.toUserEntity(): UserEntity {
             BCrypt.hashpw(password, BCrypt.gensalt(12)),
             true,
             LocalDate.now(),
-            mutableSetOf(UserRoleEntity(UserRoleId(userId, Role.TEACHER)))
+            mutableSetOf(UserRoleEntity(UserRoleId(userId, Role.TEACHER))),
+            false
     )
 }
 

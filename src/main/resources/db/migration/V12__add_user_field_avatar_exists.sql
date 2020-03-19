@@ -1,0 +1,2 @@
+ALTER TABLE usr
+    ADD COLUMN photo_exists BOOLEAN NOT NULL DEFAULT false;

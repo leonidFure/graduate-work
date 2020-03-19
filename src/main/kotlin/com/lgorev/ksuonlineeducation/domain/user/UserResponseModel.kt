@@ -12,5 +12,6 @@ data class UserResponseModel(
         val patronymic: String?,
         val email: String,
         val roles: MutableSet<Role>,
-        val teacher: TeacherModel? = null
+        val teacher: TeacherModel? = null,
+        val photoUrl: String
 )

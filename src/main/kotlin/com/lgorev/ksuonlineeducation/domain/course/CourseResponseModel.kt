@@ -28,6 +28,9 @@ data class CourseResponseModel(
         @JsonDeserialize(using = LocalDateDeserializer::class)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         val creationDate: LocalDate,
-        val isActual: Boolean
+        val isActual: Boolean,
+        val imageUrl: String,
+        var rating: Double = 0.0,
+        var ratingCount: Long = 0
 )
 
