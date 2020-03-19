@@ -1,9 +1,10 @@
 package com.lgorev.ksuonlineeducation.api
 
+import com.lgorev.ksuonlineeducation.domain.faculty.FacultyPageRequestModel
 import com.lgorev.ksuonlineeducation.domain.faculty.FacultyRequestModel
+import com.lgorev.ksuonlineeducation.domain.faculty.TeachersFacultiesModel
 import com.lgorev.ksuonlineeducation.service.FacultyService
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
+import com.lgorev.ksuonlineeducation.service.TeachersFacultiesService
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -11,18 +12,21 @@ import java.util.*
 
 @RestController
 @RequestMapping("api/faculties")
-class FacultyController(private val facultyService: FacultyService) {
+class FacultyController(private val facultyService: FacultyService,
+                        private val teachersFacultiesService: TeachersFacultiesService) {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     fun getById(@RequestParam id: UUID) = ok(facultyService.getFacultyById(id))
 
-    @GetMapping("page")
+    @GetMapping("manager")
     @PreAuthorize("isAuthenticated()")
-    fun getPage(@RequestParam page: Int = 0,
-                @RequestParam size: Int = 10,
-                @RequestParam sort: Sort.Direction = Sort.Direction.ASC) =
-            ok(facultyService.getFacultyPage(PageRequest.of(page, size, sort, "id")))
+    fun getByManagerId(@RequestParam id: UUID) = ok(facultyService.getFacultyByManagerId(id))
+
+    /*Нужен ли тут пэйджинг*/
+    @PostMapping("page")
+    @PreAuthorize("isAuthenticated()")
+    fun getPage(@RequestBody model: FacultyPageRequestModel) = ok(facultyService.getFacultyPage(model))
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
@@ -35,4 +39,12 @@ class FacultyController(private val facultyService: FacultyService) {
     @DeleteMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
     fun delete(@RequestParam id: UUID) = ok(facultyService.deleteFaculty(id))
+
+    @PostMapping("teacher/add")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun addTeacherToFaculty(@RequestBody model: TeachersFacultiesModel) = ok(teachersFacultiesService.addTeacherToFaculty(model))
+
+    @PostMapping("teacher/remove")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun removeTeacherFromFaculty(@RequestBody model: TeachersFacultiesModel) = ok(teachersFacultiesService.removeTeacherFromFaculty(model))
 }

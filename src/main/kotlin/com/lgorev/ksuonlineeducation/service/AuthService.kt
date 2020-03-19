@@ -7,6 +7,7 @@ import com.lgorev.ksuonlineeducation.domain.user.TeacherRequestModel
 import com.lgorev.ksuonlineeducation.domain.user.UserLoginModel
 import com.lgorev.ksuonlineeducation.domain.user.UserRequestModel
 import com.lgorev.ksuonlineeducation.exception.AuthException
+import com.lgorev.ksuonlineeducation.repository.session.SessionEntity
 import com.lgorev.ksuonlineeducation.repository.teacher.TeacherEntity
 import com.lgorev.ksuonlineeducation.repository.user.UserRepository
 import com.lgorev.ksuonlineeducation.repository.user.UserEntity
@@ -16,6 +17,7 @@ import com.lgorev.ksuonlineeducation.security.*
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.crypto.bcrypt.BCrypt
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -25,17 +27,32 @@ import java.util.*
 
 @Service
 @Transactional
-class AuthService(private val userRepository: UserRepository,
-                  private val userService: UserService) {
+class AuthService(private val userRepository: UserRepository) {
+
+    @Autowired
+    private lateinit var userService: UserService
+    @Autowired
+    private lateinit var sessionService: SessionService
 
     @Throws(AuthException::class)
     fun login(model: UserLoginModel): TokenResponseModel {
-        userService.loadUserByUsername(model.email)?.let {
-            if (BCrypt.checkpw(model.password, it.password)) {
+        userService.loadUserByUsername(model.email)?.let { user ->
+            if (BCrypt.checkpw(model.password, user.password)) {
+                val sessionId = UUID.randomUUID()
+                val accessToken = generateAccessToken(user.id, user.username, user.roles, sessionId)
+                val refreshToken = generateRefreshToken(user.id, user.username, sessionId)
+                val session = SessionEntity(
+                        sessionId,
+                        user.id,
+                        LocalDateTime.now().plusSeconds(REFRESH_TOKEN_LIFETIME_SECONDS)
+                )
+                sessionService.addSession(session)
                 return TokenResponseModel(
-                        generateToken(it.id, it.username, it.roles),
-                        it.roles,
-                        LocalDateTime.now().plusSeconds(ACCESS_TOKEN_LIFETIME_SECONDS)
+                        accessToken,
+                        refreshToken,
+                        user.roles,
+                        LocalDateTime.now().plusSeconds(ACCESS_TOKEN_LIFETIME_SECONDS),
+                        LocalDateTime.now().plusSeconds(REFRESH_TOKEN_LIFETIME_SECONDS)
                 )
             } else throw AuthException("Неверный пароль")
         }
@@ -60,7 +77,29 @@ class AuthService(private val userRepository: UserRepository,
         user.teacher = TeacherEntity(user.id, model.startWorkDate, model.info)
     }
 
-    private fun generateToken(userId: UUID, email: String, role: MutableList<Role>): String? {
+    @Throws(AuthException::class)
+    fun refresh(login: String, sessionId: UUID): TokenResponseModel {
+        userService.loadUserByUsername(login)?.let { user ->
+            val accessToken = generateAccessToken(user.id, user.username, user.roles, sessionId)
+            val refreshToken = generateRefreshToken(user.id, user.username, sessionId)
+            val refreshTokenExpirationTime = LocalDateTime.now().plusSeconds(REFRESH_TOKEN_LIFETIME_SECONDS)
+            sessionService.updateSession(sessionId, refreshTokenExpirationTime)
+            return TokenResponseModel(
+                    accessToken,
+                    refreshToken,
+                    user.roles,
+                    LocalDateTime.now().plusSeconds(ACCESS_TOKEN_LIFETIME_SECONDS),
+                    LocalDateTime.now().plusSeconds(REFRESH_TOKEN_LIFETIME_SECONDS)
+            )
+        }
+        throw AuthException("Пользователь с логином \"${login}\" ненайден")
+    }
+
+    fun logout(sessionId: UUID) {
+        sessionService.deleteSession(sessionId)
+    }
+
+    private fun generateAccessToken(userId: UUID, email: String, role: MutableList<Role>, sessionId: UUID): String? {
         return Jwts
                 .builder()
                 .signWith(Keys.hmacShaKeyFor(JWT_SECRET.toByteArray()), SignatureAlgorithm.HS512)
@@ -70,6 +109,22 @@ class AuthService(private val userRepository: UserRepository,
                 .setSubject(email)
                 .setExpiration(Date(System.currentTimeMillis() + ACCESS_TOKEN_LIFETIME_SECONDS * 1000))
                 .claim(ROLES_CLAIM, role.toString())
+                .claim(SESSION_ID_CLAIM, sessionId.toString())
+                .claim(USER_ID_CLAIM, userId)
+                .compact()
+    }
+
+    private fun generateRefreshToken(userId: UUID, email: String, sessionId: UUID): String? {
+        return Jwts
+                .builder()
+                .signWith(Keys.hmacShaKeyFor(JWT_SECRET.toByteArray()), SignatureAlgorithm.HS512)
+                .setHeaderParam(TOKEN_TYPE_HEADER, TOKEN_TYPE)
+                .setIssuer(TOKEN_ISSUER)
+                .setAudience(TOKEN_AUDIENCE)
+                .setSubject(email)
+                .setExpiration(Date(System.currentTimeMillis() + REFRESH_TOKEN_LIFETIME_SECONDS * 1000))
+                .claim(ROLES_CLAIM, listOf(REFRESH_ROLE).toString())
+                .claim(SESSION_ID_CLAIM, sessionId.toString())
                 .claim(USER_ID_CLAIM, userId)
                 .compact()
     }
@@ -82,7 +137,6 @@ private fun UserRequestModel.toUserEntity(): UserEntity {
             firstName,
             lastName,
             patronymic,
-            gender,
             email,
             BCrypt.hashpw(password, BCrypt.gensalt(12)),
             true,
@@ -98,7 +152,6 @@ private fun TeacherRequestModel.toUserEntity(): UserEntity {
             firstName,
             lastName,
             patronymic,
-            gender,
             email,
             BCrypt.hashpw(password, BCrypt.gensalt(12)),
             true,

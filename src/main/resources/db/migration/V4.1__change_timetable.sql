@@ -1,0 +1,2 @@
+ALTER TABLE timetable
+ALTER COLUMN day_of_week TYPE VARCHAR(9);

@@ -1,0 +1,1 @@
+ALTER TABLE lesson_log ALTER COLUMN old_status DROP NOT NULL;

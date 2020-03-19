@@ -10,7 +10,6 @@ class UserModel(
         var lastName: String = "",
         var patronymic: String? = null,
         private var email: String = "",
-        var gender: Gender = Gender.FEMALE,
         private var password: String = "",
         var roles: MutableList<Role> = mutableListOf()
 ) : UserDetails {
@@ -34,4 +33,3 @@ class UserModel(
 
 enum class Role { ADMIN, TEACHER, STUDENT }
 
-enum class Gender { MALE, FEMALE }

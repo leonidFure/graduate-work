@@ -14,7 +14,6 @@ data class TeacherRequestModel(
         val lastName: String,
         val patronymic: String?,
         val email: String,
-        val gender: Gender,
         @JsonSerialize(using = LocalDateSerializer::class)
         @JsonDeserialize(using = LocalDateDeserializer::class)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

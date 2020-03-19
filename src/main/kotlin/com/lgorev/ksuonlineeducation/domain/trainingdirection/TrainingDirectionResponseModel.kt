@@ -7,6 +7,7 @@ import java.util.*
 data class TrainingDirectionResponseModel(
         val id: UUID,
         val name: String,
+        val code: String,
         val description: String,
-        val departmentId: UUID
+        val facultyId: UUID
 )

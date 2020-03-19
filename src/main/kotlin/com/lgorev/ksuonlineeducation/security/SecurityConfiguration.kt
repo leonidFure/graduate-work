@@ -1,11 +1,13 @@
 package com.lgorev.ksuonlineeducation.security
 
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
+
 
 @Configuration
 @EnableWebSecurity
@@ -16,6 +18,7 @@ import org.springframework.security.config.http.SessionCreationPolicy
 )
 class SecurityConfiguration : WebSecurityConfigurerAdapter() {
 
+
     override fun configure(http: HttpSecurity) {
         http
                 .cors().disable()
@@ -23,6 +26,11 @@ class SecurityConfiguration : WebSecurityConfigurerAdapter() {
                 .formLogin().disable()
                 .addFilter(JwtAuthorizationFilter(authenticationManager()))
                 .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and().oauth2Login()
+                .loginPage("/error")
+                .defaultSuccessUrl("/ouath2/login")
+                .redirectionEndpoint()
+                .baseUri("/oauth2/redirect")
     }
 }

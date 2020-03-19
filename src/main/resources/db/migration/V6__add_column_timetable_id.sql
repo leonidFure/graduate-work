@@ -1,0 +1,2 @@
+ALTER TABLE lesson
+    ADD COLUMN timetable_id UUID REFERENCES timetable (id) ON UPDATE CASCADE ON DELETE SET NULL;

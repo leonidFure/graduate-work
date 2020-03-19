@@ -6,7 +6,9 @@ import java.time.LocalDateTime
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class TokenResponseModel (
-        val token: String?,
+        val accessToken: String?,
+        val refreshToken: String?,
         val roles: MutableList<Role>,
-        val expirationDateTime: LocalDateTime
+        val accessTokenExpirationDateTime: LocalDateTime,
+        val refreshTokenExpirationDateTime: LocalDateTime
 )

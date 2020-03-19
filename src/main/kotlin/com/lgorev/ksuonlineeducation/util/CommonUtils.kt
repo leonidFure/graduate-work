@@ -9,7 +9,7 @@ import java.util.*
 fun getUserId(principal: Principal): UUID? {
     val token = principal as UsernamePasswordAuthenticationToken
     val container = token.credentials as TokenCredentialContainer
-    return container.id
+    return container.userId
 }
 
 fun getRole(principal: Principal): Role {
