@@ -2,6 +2,7 @@ package com.lgorev.ksuonlineeducation.service
 
 import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
 import com.lgorev.ksuonlineeducation.domain.common.map
+import com.lgorev.ksuonlineeducation.domain.subject.SubjectListRequestModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectResponseModel
@@ -56,7 +57,7 @@ class SubjectService(private val subjectRepository: SubjectRepository) {
     fun existsSubjectsByIds(ids: MutableSet<UUID>) = subjectRepository.existsByIdIn(ids)
 
     fun getSubjectPage(model: SubjectRequestPageModel): PageResponseModel<SubjectResponseModel> {
-        return if(model.trainingDirectionIds.isNotEmpty()) {
+        return if (model.trainingDirectionIds.isNotEmpty()) {
             val subjectForEntranceIds = subjectForEntranceService.getSubjectForEntranceByDirectionIds(model.trainingDirectionIds)
             val ids = subjectForEntranceIds.map { it.subjectsForEntranceId.subjectId }.toMutableSet()
             subjectRepository.findPage(model, ids).map { it.toModel() }
@@ -67,6 +68,8 @@ class SubjectService(private val subjectRepository: SubjectRepository) {
         if (subjectRepository.existsById(id))
             subjectRepository.deleteById(id)
     }
+
+    fun getSubjectListByIds(model: SubjectListRequestModel) = subjectRepository.findByIdIn(model.ids).map { it.toModel() }
 }
 
 private fun SubjectRequestModel.toEntity() = SubjectEntity(id, name, description, type)

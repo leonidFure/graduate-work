@@ -21,16 +21,16 @@ class FacultyService(private val facultyRepository: FacultyRepository) {
 
     @Autowired
     private lateinit var teachersFacultiesService: TeachersFacultiesService
+
     @Autowired
-    private lateinit var teacherService: TeacherService
+    private lateinit var userService: UserService
 
     @Throws(UniqueConstraintException::class, NotFoundException::class)
     fun addFaculty(model: FacultyRequestModel): FacultyResponseModel {
         if (facultyRepository.existsByName(model.name))
             throw UniqueConstraintException(message = "Факультет ${model.name} уже существует")
-
-        if (!teacherService.existTeacherById(model.managerId))
-            throw NotFoundException(message = "Преподаватель не найден")
+        if(!userService.existsTeacherById(model.managerId))
+            throw NotFoundException("Преподаватель не найден")
 
         if (facultyRepository.existsByManagerId(model.managerId))
             throw UniqueConstraintException(message = "За данным преподавателем уже закреплен факультет")
@@ -48,8 +48,8 @@ class FacultyService(private val facultyRepository: FacultyRepository) {
                 throw UniqueConstraintException(message = "Факультет ${model.name} уже существует")
         }
 
-        if (!teacherService.existTeacherById(model.managerId))
-            throw NotFoundException(message = "Преподаватель не найден")
+        if(!userService.existsTeacherById(model.managerId))
+            throw NotFoundException("Преподаватель не найден")
 
         facultyRepository.findByManagerId(model.managerId)?.let { faculty ->
             if (faculty.id != model.id)
@@ -94,11 +94,17 @@ class FacultyService(private val facultyRepository: FacultyRepository) {
         if (facultyRepository.existsById(id))
             facultyRepository.deleteById(id)
     }
+
+    fun getFacultiesByTeacherId(id: UUID): MutableSet<FacultyResponseModel> {
+        val teachersFaculties = teachersFacultiesService.getTeachersFacultiesByTeacherId(id)
+        return facultyRepository.findAllById(teachersFaculties.map { it.facultyId }).map { it.toModel() }.toMutableSet()
+    }
+
 }
 
 private fun FacultyEntity.toModel() =
-        FacultyResponseModel(id, name, description, managerId)
+        FacultyResponseModel(id, name, description, abbr,  managerId)
 
 private fun FacultyRequestModel.toEntity() =
-        FacultyEntity(id, name, description, managerId)
+        FacultyEntity(id, name, description, abbr, managerId)
 

@@ -78,6 +78,8 @@ class TimetableService(private val timetableRepository: TimetableRepository) {
         if (timetableRepository.existsById(id))
             timetableRepository.deleteById(id)
     }
+
+    fun getTimetablesByIds(timetableIds: List<UUID>) = timetableRepository.findAllById(timetableIds).map { it.toModel() }
 }
 
 private fun TimetableEntity.toModel() = TimetableResponseModel(id, courseId, dayOfWeek, startTime, endTime, type, isActual)

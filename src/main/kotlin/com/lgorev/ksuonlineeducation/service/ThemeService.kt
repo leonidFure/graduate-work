@@ -30,6 +30,8 @@ class ThemeService(private val themeRepository: ThemeRepository) {
         throw NotFoundException("Тема не найдена")
     }
 
+    fun getThemesByIds(ids: MutableSet<UUID>) = themeRepository.findAllById(ids)
+
     fun getThemePage(model: ThemeRequestPageModel): PageResponseModel<ThemeResponseModel> {
         return if(model.lessonsIds.isNotEmpty()) {
             val lessonsThemesIds = lessonsThemesService.getLessonsThemesByLessonIds(model.lessonsIds)

@@ -1,24 +1,11 @@
 package com.lgorev.ksuonlineeducation
 
-import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
-import com.lgorev.ksuonlineeducation.domain.common.map
-import com.lgorev.ksuonlineeducation.domain.user.Role
-import com.lgorev.ksuonlineeducation.repository.faculty.FacultyRepository
-import com.lgorev.ksuonlineeducation.repository.teacher.TeacherEntity
-import com.lgorev.ksuonlineeducation.repository.teacher.TeacherRepository
-import com.lgorev.ksuonlineeducation.repository.user.UserRepository
-import com.lgorev.ksuonlineeducation.service.AuthService
 import com.lgorev.ksuonlineeducation.service.CourseReviewService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.repository.findByIdOrNull
-import java.io.Console
-import java.time.LocalDate
-import java.time.temporal.Temporal
-import java.time.temporal.TemporalAdjuster
+
 import java.util.*
-import com.lgorev.ksuonlineeducation.Aaa as Aaa
 
 @SpringBootTest
 class KsuOnlineEducationApplicationTests {

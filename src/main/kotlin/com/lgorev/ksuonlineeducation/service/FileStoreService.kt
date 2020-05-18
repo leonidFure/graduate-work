@@ -20,14 +20,21 @@ class FileStoreService(private val resourceLoader: ResourceLoader) {
     @Autowired
     private lateinit var userService: UserService
 
+    @Autowired
+    private lateinit var courseService: CourseService
+
+    @Autowired
+    private lateinit var subjectService: SubjectService
+
     @Value("\${file.path.avatar}")
     private lateinit var pathAvatar: String
 
     @Value("\${file.path.course}")
     private lateinit var pathCourse: String
+    @Value("\${file.path.subject}")
+    private lateinit var pathSubject: String
 
     private val validImageTypes = listOf(MimeTypeUtils.IMAGE_JPEG_VALUE, MimeTypeUtils.IMAGE_PNG_VALUE)
-
 
     @Throws(BadRequestException::class)
     fun addAvatar(userId: UUID, image: MultipartFile) {
@@ -61,17 +68,42 @@ class FileStoreService(private val resourceLoader: ResourceLoader) {
         Files.write(file, image.bytes)
     }
 
-    @Throws(NotFoundException::class)
     fun getCourseImage(courseId: UUID): MockMultipartFile {
-        val fileTypeStr = FileType.COURSE_IMAGE.toString().toLowerCase()
-        val filename = "${courseId}_$fileTypeStr.jpg"
-        val file = Paths.get(pathCourse, filename)
-        try {
-            val bytes = Files.readAllBytes(file)
-            return MockMultipartFile("${courseId}_$fileTypeStr.jpg", bytes)
-        } catch (e: Exception) {
-            throw NotFoundException("Файл не найден")
+        val courseFileTypeStr = FileType.COURSE_IMAGE.toString().toLowerCase()
+        val subjectFileTypeStr = FileType.SUBJECT_IMAGE.toString().toLowerCase()
+        val courseFileName = "${courseId}_$courseFileTypeStr.jpg"
+        val defaultFileName = "default.png"
+        val courseFile = Paths.get(pathCourse, courseFileName)
+        val courseFileExists = Files.exists(courseFile)
+
+        if (courseFileExists) {
+            val bytes = Files.readAllBytes(courseFile)
+            return MockMultipartFile("${courseId}_$courseFileTypeStr.jpg", bytes)
+        } else {
+            val subjectId = courseService.getSubjectId(courseId)
+            if (subjectId != null) {
+                val subjectFileName = "${subjectId}_$subjectFileTypeStr.jpg"
+                val subjectFile = Paths.get(pathSubject, subjectFileName)
+                val subjectFileExists = Files.exists(subjectFile)
+                if (subjectFileExists) {
+                    val bytes = Files.readAllBytes(subjectFile)
+                    return MockMultipartFile("${courseId}_$courseFileTypeStr.jpg", bytes)
+                }
+            }
         }
+        val defaultFile = Paths.get(pathCourse, defaultFileName)
+        val bytes = Files.readAllBytes(defaultFile)
+        return MockMultipartFile("${courseId}_$courseFileTypeStr.jpg", bytes)
+    }
+
+
+    @Throws(BadRequestException::class)
+    fun addSubjectImage(subjectId: UUID, image: MultipartFile) {
+        if (!isValidFileFormat(image))
+            throw BadRequestException("Неподходящий формат фотографии")
+        val fileTypeStr = FileType.SUBJECT_IMAGE.toString().toLowerCase()
+        val file = Paths.get(pathSubject, "${subjectId}_$fileTypeStr.jpg")
+        Files.write(file, image.bytes)
     }
 
     private fun isValidFileFormat(file: MultipartFile) = validImageTypes.contains(file.contentType)

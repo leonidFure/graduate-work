@@ -25,5 +25,6 @@ data class LessonRequestPageModel(
         @JsonDeserialize(using = LocalDateDeserializer::class)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         val toDate: LocalDate? = null,
-        val statusFilter: LessonStatus? = null
+        val statusFilter: LessonStatus? = null,
+        val courseIds: MutableSet<UUID>? = null
 )

@@ -24,13 +24,16 @@ class EducationProgramService(private val educationProgramRepository: EducationP
     @Autowired
     private lateinit var subjectService: SubjectService
 
+    @Autowired
+    private lateinit var teachersEducationProgramService: TeachersEducationProgramsService
+
     @Throws(NotFoundException::class)
     fun getEducationProgramById(id: UUID): EducationProgramResponseModel {
         educationProgramRepository.findByIdOrNull(id)?.let { return it.toModel() }
         throw NotFoundException("Программа обучения не найдена")
     }
 
-    fun getEducationProgramsByIds(ids: MutableIterable<UUID>) = educationProgramRepository.findAllById(ids).map { it.toModel() }
+    fun getEducationProgramsByIds(ids: MutableSet<UUID>) = educationProgramRepository.findAllByIdIn(ids).map { it.toModel() }
 
     fun existEducationProgramById(id: UUID) = educationProgramRepository.existsById(id)
 
@@ -38,6 +41,10 @@ class EducationProgramService(private val educationProgramRepository: EducationP
     fun getPage(model: EducationProgramRequestPageModel): PageResponseModel<EducationProgramResponseModel> {
         if (model.creationDateFrom != null && model.creationDateTo != null && model.creationDateFrom.isBefore(model.creationDateTo))
             throw BadRequestException("Промежуток задан некоректно")
+        if(model.teacherId != null) {
+            val teachersEducationPrograms = teachersEducationProgramService.getTeachersEducationProgramsByTeacherId(model.teacherId)
+            model.ids = teachersEducationPrograms.map { it.educationProgramId }
+        }
         return educationProgramRepository.findPage(model).map { it.toModel() }
     }
 
@@ -76,6 +83,8 @@ class EducationProgramService(private val educationProgramRepository: EducationP
         if (educationProgramRepository.existsById(id))
             educationProgramRepository.deleteById(id)
     }
+
+    fun getListByName(name: String) = educationProgramRepository.findAllByNameContainingIgnoreCase(name)
 }
 
 private fun EducationProgramEntity.toModel() =

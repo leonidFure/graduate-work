@@ -17,29 +17,44 @@ class CourseSubscriptionService(private val courseSubscriptionRepository: Course
 
     @Autowired
     private lateinit var courseService: CourseService
+
     @Autowired
     private lateinit var userService: UserService
 
     @Throws(NotFoundException::class, UniqueConstraintException::class)
     fun subscribeUserOnCourse(model: CourseSubscriptionModel) {
-        if (!courseService.existCourseById(model.courseId))
-            throw NotFoundException("Курс не найден")
-        if (!userService.existUserById(model.userId))
-            throw NotFoundException("Пользователь не найден")
-        val id = CourseSubscriptionId(model.courseId, model.userId)
-        if (courseSubscriptionRepository.existsById(id))
-            throw UniqueConstraintException("Пользователь уже подписан на курс")
-        courseSubscriptionRepository.save(model.toEntity())
+        model.userId?.let { userId ->
+            if (!courseService.existCourseById(model.courseId))
+                throw NotFoundException("Курс не найден")
+            if (!userService.existUserById(userId))
+                throw NotFoundException("Пользователь не найден")
+            val id = CourseSubscriptionId(model.courseId, userId)
+            if (courseSubscriptionRepository.existsById(id))
+                throw UniqueConstraintException("Пользователь уже подписан на курс")
+            courseSubscriptionRepository.save(model.toEntity())
+        }
     }
 
 
     fun unsubscribeUserFromCourse(model: CourseSubscriptionModel) {
-        val id = CourseSubscriptionId(model.courseId, model.userId)
-        if (courseSubscriptionRepository.existsById(id))
-            courseSubscriptionRepository.deleteById(id)
+        model.userId?.let { userId ->
+            val id = CourseSubscriptionId(model.courseId, userId)
+            if (courseSubscriptionRepository.existsById(id))
+                courseSubscriptionRepository.deleteById(id)
+        }
     }
 
-    fun getByUserId(id: UUID) = courseSubscriptionRepository.findByUserId(id)
+    fun getListByUserId(id: UUID?): MutableSet<CourseSubscriptionEntity>? {
+        if (id == null) return null
+        return courseSubscriptionRepository.findListByUserId(id)
+    }
+
+    fun getByUserId(id: UUID?, courseId: UUID): CourseSubscriptionEntity? {
+        if(id == null) return null
+        return courseSubscriptionRepository.findByUserId(id, courseId)
+    }
+
+    fun getByCourseId(courseId: UUID) = courseSubscriptionRepository.findByCourseId(courseId)
 }
 
 private fun CourseSubscriptionModel.toEntity() = CourseSubscriptionEntity(CourseSubscriptionId(courseId, userId))

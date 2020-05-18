@@ -30,6 +30,9 @@ class SubjectPagingRepositoryImpl(@PersistenceContext private val em: EntityMana
         if(ids != null)
             predicates.add(root.get<UUID>("id").`in`(ids))
 
+        if(model.ids != null)
+            predicates.add(root.get<UUID>("id").`in`(ids))
+
         cq.where(cb.and(*predicates.toTypedArray()))
         if (model.sortType == Sort.Direction.DESC)
             cq.orderBy(cb.desc(root.get<String>("name")))

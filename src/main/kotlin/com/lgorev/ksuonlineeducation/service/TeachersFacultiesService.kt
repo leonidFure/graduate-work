@@ -10,33 +10,38 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Service
 @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-class TeachersFacultiesService (private val teachersFacultiesRepository: TeachersFacultiesRepository) {
+class TeachersFacultiesService(private val teachersFacultiesRepository: TeachersFacultiesRepository) {
     @Autowired
     private lateinit var facultyService: FacultyService
+
     @Autowired
-    private lateinit var teacherService: TeacherService
+    private lateinit var userService: UserService
 
     @Throws(NotFoundException::class)
     fun addTeacherToFaculty(model: TeachersFacultiesModel) {
-        if(!facultyService.existFacultyById(model.facultyId))
+        if (!facultyService.existFacultyById(model.facultyId))
             throw NotFoundException("Факультет не найден")
-        if (!teacherService.existTeacherById(model.teacherId))
-            throw NotFoundException("Преподватель не найден")
+        if (!userService.existsTeacherById(model.teacherId))
+            throw NotFoundException("Преподаватель не найден")
         teachersFacultiesRepository.saveAndFlush(model.toEntity()).toModel()
     }
 
     @Throws(BadRequestException::class)
     fun removeTeacherFromFaculty(model: TeachersFacultiesModel) {
         val faculty = facultyService.getFacultyById(model.facultyId)
-        if(faculty.managerId == model.teacherId)
+        if (faculty.managerId == model.teacherId)
             throw BadRequestException("Декан не может быть убран из института")
         val entity = model.toEntity()
         if (teachersFacultiesRepository.existsById(entity.teachersFacultiesId))
             teachersFacultiesRepository.delete(entity)
     }
+
+    fun getTeachersFacultiesByTeacherId(id: UUID) =
+            teachersFacultiesRepository.findByTeacherId(id).map { it.toModel() }.toMutableSet()
 }
 
 private fun TeachersFacultiesEntity.toModel() =

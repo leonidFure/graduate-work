@@ -2,11 +2,8 @@ package com.lgorev.ksuonlineeducation.repository.lesson
 
 import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonRequestPageModel
-import com.lgorev.ksuonlineeducation.domain.lesson.LessonStatus
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
+import com.lgorev.ksuonlineeducation.repository.lesson.LessonEntity_.*
 import org.springframework.data.domain.Sort
-import java.time.LocalDate
 import java.util.*
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
@@ -24,32 +21,33 @@ class LessonPagingRepositoryImpl(@PersistenceContext private val em: EntityManag
         val countQuery = cb.createQuery(Long::class.java)
 
         val predicates = mutableSetOf<Predicate>()
-        if (ids != null) predicates.add(root.get<UUID>("id").`in`(ids))
+        if (ids != null) predicates.add(root.get(id).`in`(ids))
         if (model.courseId != null)
-            predicates.add(cb.equal(root.get<UUID>("courseId"), model.courseId))
+            predicates.add(cb.equal(root.get(courseId), model.courseId))
         if (model.timetableIds.isNotEmpty())
-            predicates.add(root.get<UUID>("timetableId").`in`(model.timetableIds))
+            predicates.add(root.get(timetableId).`in`(model.timetableIds))
         if (model.fromDate != null && model.toDate != null)
-            predicates.add(cb.between(root.get<LocalDate>("date"), model.fromDate, model.toDate))
+            predicates.add(cb.between(root.get(date), model.fromDate, model.toDate))
         if (model.statusFilter != null)
-            predicates.add(cb.equal(root.get<LessonStatus>("status"), model.statusFilter))
+            predicates.add(cb.equal(root.get(status), model.statusFilter))
+        if(model.courseIds != null)
+            predicates.add(root.get(courseId).`in`(model.courseIds))
         cq.where(cb.and(*predicates.toTypedArray()))
 
         if (model.sortType == Sort.Direction.DESC)
-            cq.orderBy(cb.desc(root.get<String>("date")))
+            cq.orderBy(cb.desc(root.get(date)))
         else
-            cq.orderBy(cb.asc(root.get<String>("date")))
+            cq.orderBy(cb.asc(root.get(date)))
 
         countQuery.select(cb.count(countQuery.from(lesson)))
         countQuery.where(cb.and(*predicates.toTypedArray()))
         val typedQuery = em.createQuery(cq)
-        typedQuery.firstResult = (model.pageNum) * model.pageSize
+        typedQuery.firstResult = (model.pageNum - 1) * model.pageSize
         typedQuery.maxResults = model.pageSize
 
         val query = em.createQuery(countQuery)
         val count = query.singleResult
         val resultList = typedQuery.resultList
         return PageResponseModel(resultList.toMutableSet(), count ?: 0)
-
     }
 }

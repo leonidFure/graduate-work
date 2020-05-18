@@ -30,7 +30,9 @@ data class CourseResponseModel(
         val creationDate: LocalDate,
         val isActual: Boolean,
         val imageUrl: String,
-        var rating: Double = 0.0,
-        var ratingCount: Long = 0
+        var rating: Double? = 0.0,
+        var ratingCount: Long? = 0,
+        var hasSubscription: Boolean = false,
+        val creatorId: UUID?
 )
 

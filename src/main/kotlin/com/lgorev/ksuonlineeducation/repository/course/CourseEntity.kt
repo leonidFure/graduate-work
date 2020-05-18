@@ -23,6 +23,18 @@ data class CourseEntity(
         @Column(name = "creation_date")
         var creationDate: LocalDate = LocalDate.now(),
         @Column(name = "is_actual")
-        var isActual: Boolean = true
-)
+        var isActual: Boolean = true,
+        @Column(name = "creator_id")
+        val creatorId: UUID?
+) {
+    companion object Fields {
+        const val ID = "id"
+        const val EDUCATION_PROGRAM_ID = "educationProgramId"
+        const val STATUS = "status"
+        const val START_DATE = "startDate"
+        const val END_DATE = "endDate"
+        const val CREATION_DATE = "creationDate"
+        const val IS_ACTUAL = "isActual"
+    }
+}
 

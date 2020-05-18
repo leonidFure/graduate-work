@@ -3,16 +3,12 @@ package com.lgorev.ksuonlineeducation.service
 import com.lgorev.ksuonlineeducation.exception.LoginException
 import com.lgorev.ksuonlineeducation.domain.common.TokenResponseModel
 import com.lgorev.ksuonlineeducation.domain.user.Role
-import com.lgorev.ksuonlineeducation.domain.user.TeacherRequestModel
 import com.lgorev.ksuonlineeducation.domain.user.UserLoginModel
 import com.lgorev.ksuonlineeducation.domain.user.UserRequestModel
 import com.lgorev.ksuonlineeducation.exception.AuthException
 import com.lgorev.ksuonlineeducation.repository.session.SessionEntity
-import com.lgorev.ksuonlineeducation.repository.teacher.TeacherEntity
 import com.lgorev.ksuonlineeducation.repository.user.UserRepository
 import com.lgorev.ksuonlineeducation.repository.user.UserEntity
-import com.lgorev.ksuonlineeducation.repository.user.UserRoleEntity
-import com.lgorev.ksuonlineeducation.repository.user.UserRoleId
 import com.lgorev.ksuonlineeducation.security.*
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -31,6 +27,7 @@ class AuthService(private val userRepository: UserRepository) {
 
     @Autowired
     private lateinit var userService: UserService
+
     @Autowired
     private lateinit var sessionService: SessionService
 
@@ -39,7 +36,7 @@ class AuthService(private val userRepository: UserRepository) {
         userService.loadUserByUsername(model.email)?.let { user ->
             if (BCrypt.checkpw(model.password, user.password)) {
                 val sessionId = UUID.randomUUID()
-                val accessToken = generateAccessToken(user.id, user.username, user.roles, sessionId)
+                val accessToken = generateAccessToken(user.id, user.username, user.role, sessionId)
                 val refreshToken = generateRefreshToken(user.id, user.username, sessionId)
                 val session = SessionEntity(
                         sessionId,
@@ -50,7 +47,8 @@ class AuthService(private val userRepository: UserRepository) {
                 return TokenResponseModel(
                         accessToken,
                         refreshToken,
-                        user.roles,
+                        user.id,
+                        user.role,
                         LocalDateTime.now().plusSeconds(ACCESS_TOKEN_LIFETIME_SECONDS),
                         LocalDateTime.now().plusSeconds(REFRESH_TOKEN_LIFETIME_SECONDS)
                 )
@@ -60,34 +58,42 @@ class AuthService(private val userRepository: UserRepository) {
     }
 
     @Throws(LoginException::class)
-    fun register(model: UserRequestModel) {
+    fun register(model: UserRequestModel): TokenResponseModel {
         userRepository.findByEmail(model.email)?.let {
             throw LoginException("Пользователь с логином \"${model.email}\" уже существует")
         }
-        userRepository.save(model.toUserEntity())
-    }
-
-
-    @Throws(LoginException::class)
-    fun register(model: TeacherRequestModel) {
-        userRepository.findByEmail(model.email)?.let {
-            throw LoginException("Пользователь с логином \"${model.email}\" уже существует")
-        }
-        val user = userRepository.save(model.toUserEntity())
-        user.teacher = TeacherEntity(user.id, model.startWorkDate, model.info)
+        val newUser = userRepository.save(model.toUserEntity())
+        val sessionId = UUID.randomUUID()
+        val accessToken = generateAccessToken(newUser.id, newUser.email, newUser.role, sessionId)
+        val refreshToken = generateRefreshToken(newUser.id, newUser.email, sessionId)
+        val session = SessionEntity(
+                sessionId,
+                newUser.id,
+                LocalDateTime.now().plusSeconds(REFRESH_TOKEN_LIFETIME_SECONDS)
+        )
+        sessionService.addSession(session)
+        return TokenResponseModel(
+                accessToken,
+                refreshToken,
+                newUser.id,
+                newUser.role,
+                LocalDateTime.now().plusSeconds(ACCESS_TOKEN_LIFETIME_SECONDS),
+                LocalDateTime.now().plusSeconds(REFRESH_TOKEN_LIFETIME_SECONDS)
+        )
     }
 
     @Throws(AuthException::class)
     fun refresh(login: String, sessionId: UUID): TokenResponseModel {
         userService.loadUserByUsername(login)?.let { user ->
-            val accessToken = generateAccessToken(user.id, user.username, user.roles, sessionId)
+            val accessToken = generateAccessToken(user.id, user.username, user.role, sessionId)
             val refreshToken = generateRefreshToken(user.id, user.username, sessionId)
             val refreshTokenExpirationTime = LocalDateTime.now().plusSeconds(REFRESH_TOKEN_LIFETIME_SECONDS)
             sessionService.updateSession(sessionId, refreshTokenExpirationTime)
             return TokenResponseModel(
                     accessToken,
                     refreshToken,
-                    user.roles,
+                    user.id,
+                    user.role,
                     LocalDateTime.now().plusSeconds(ACCESS_TOKEN_LIFETIME_SECONDS),
                     LocalDateTime.now().plusSeconds(REFRESH_TOKEN_LIFETIME_SECONDS)
             )
@@ -99,7 +105,7 @@ class AuthService(private val userRepository: UserRepository) {
         sessionService.deleteSession(sessionId)
     }
 
-    private fun generateAccessToken(userId: UUID, email: String, role: MutableList<Role>, sessionId: UUID): String? {
+    private fun generateAccessToken(userId: UUID, email: String, role: Role, sessionId: UUID): String? {
         return Jwts
                 .builder()
                 .signWith(Keys.hmacShaKeyFor(JWT_SECRET.toByteArray()), SignatureAlgorithm.HS512)
@@ -141,24 +147,10 @@ private fun UserRequestModel.toUserEntity(): UserEntity {
             BCrypt.hashpw(password, BCrypt.gensalt(12)),
             true,
             LocalDate.now(),
-            mutableSetOf(UserRoleEntity(UserRoleId(userId, Role.STUDENT))),
-            false
-    )
-}
-
-private fun TeacherRequestModel.toUserEntity(): UserEntity {
-    val userId = UUID.randomUUID()
-    return UserEntity(
-            userId,
-            firstName,
-            lastName,
-            patronymic,
-            email,
-            BCrypt.hashpw(password, BCrypt.gensalt(12)),
-            true,
-            LocalDate.now(),
-            mutableSetOf(UserRoleEntity(UserRoleId(userId, Role.TEACHER))),
-            false
+            false,
+            role,
+            startWorkDate,
+            info
     )
 }
 

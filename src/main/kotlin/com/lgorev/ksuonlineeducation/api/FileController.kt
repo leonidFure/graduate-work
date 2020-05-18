@@ -18,21 +18,21 @@ import java.util.*
 @RequestMapping("api/files")
 class FileController(private val fileStoreService: FileStoreService) {
     @PostMapping("avatar")
-    @PreAuthorize("hasAuthority('STUDENT')")
+    @PreAuthorize("isAuthenticated()")
     fun addAvatar(@RequestParam image: MultipartFile, principal: Principal) {
         val userId = getUserId(principal)
         if (userId != null) fileStoreService.addAvatar(userId, image)
     }
 
     @GetMapping("avatar")
-    @PreAuthorize("hasAuthority('STUDENT')")
+    @PreAuthorize("isAuthenticated()")
     fun getAvatar(principal: Principal): ResponseEntity<*> {
         val userId = getUserId(principal)
         if (userId != null) {
             val multipartFile = fileStoreService.getAvatar(userId)
             return getFile(multipartFile)
         }
-        throw NotFoundException("Пользователь не найлен не найден")
+        throw NotFoundException("Пользователь не найден")
     }
 
     @GetMapping("avatar/open")
@@ -53,6 +53,12 @@ class FileController(private val fileStoreService: FileStoreService) {
     fun getCourseImage(@RequestParam id: UUID): ResponseEntity<*> {
         val multipartFile = fileStoreService.getCourseImage(id)
         return getFile(multipartFile)
+    }
+
+    @PostMapping("subject")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun addSubjectImage(@RequestParam image: MultipartFile, @RequestParam subjectId: UUID, principal: Principal) {
+        fileStoreService.addSubjectImage(subjectId, image)
     }
 
     private fun getFile(multipartFile: MultipartFile): ResponseEntity<ByteArrayResource> {

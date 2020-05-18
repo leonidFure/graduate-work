@@ -14,6 +14,8 @@ data class FacultyEntity(
         var name: String = "",
         @Column(name = "description")
         var description: String,
+        @Column(name = "abbr")
+        var abbr: String,
         @Column(name = "manager_id")
         var managerId: UUID
 

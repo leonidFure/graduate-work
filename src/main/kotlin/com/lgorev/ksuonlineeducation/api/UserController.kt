@@ -1,9 +1,6 @@
 package com.lgorev.ksuonlineeducation.api
 
-import com.lgorev.ksuonlineeducation.domain.user.PasswordModel
-import com.lgorev.ksuonlineeducation.domain.user.Role
-import com.lgorev.ksuonlineeducation.domain.user.UserRequestModel
-import com.lgorev.ksuonlineeducation.domain.user.UserResponseModel
+import com.lgorev.ksuonlineeducation.domain.user.*
 import com.lgorev.ksuonlineeducation.exception.AuthException
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
@@ -75,4 +72,9 @@ class UserController(private val userService: UserService) {
         if (model.id != null) model.id = userId
         userService.updatePassword(model)
     }
+
+    @PostMapping("page")
+    @PreAuthorize("isAuthenticated()")
+    fun getPage(@RequestBody model: UserPageRequestModel) = userService.getPage(model)
+
 }

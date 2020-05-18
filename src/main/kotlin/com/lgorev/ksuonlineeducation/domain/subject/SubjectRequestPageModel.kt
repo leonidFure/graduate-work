@@ -9,5 +9,6 @@ data class SubjectRequestPageModel(
         val sortType: Direction = Direction.ASC,
         val nameFilter: String? = null,
         val typeFilter: SubjectType? = null,
+        val ids: MutableSet<UUID>? = null,
         val trainingDirectionIds: MutableSet<UUID> = mutableSetOf()
 )

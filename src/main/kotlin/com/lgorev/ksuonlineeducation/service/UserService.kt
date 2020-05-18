@@ -1,12 +1,13 @@
 package com.lgorev.ksuonlineeducation.service
 
-import com.lgorev.ksuonlineeducation.domain.teacher.TeacherModel
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
+import com.lgorev.ksuonlineeducation.domain.common.map
 import com.lgorev.ksuonlineeducation.domain.user.*
 import com.lgorev.ksuonlineeducation.exception.AuthException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
-import com.lgorev.ksuonlineeducation.repository.teacher.TeacherEntity
 import com.lgorev.ksuonlineeducation.repository.user.UserRepository
 import com.lgorev.ksuonlineeducation.repository.user.UserEntity
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -18,6 +19,12 @@ import java.util.*
 @Service
 @Transactional
 class UserService(private val userRepository: UserRepository) : UserDetailsService {
+
+    @Autowired
+    lateinit var coursesTeacherService: CoursesTeachersService
+
+    @Autowired
+    lateinit var coursesSubscriptionService: CourseSubscriptionService
 
     override fun loadUserByUsername(email: String?) = userRepository.findByEmail(email ?: "")?.toUserModel()
 
@@ -62,19 +69,31 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
             user.photoExists = true
         }
     }
+
+    fun getPage(model: UserPageRequestModel): PageResponseModel<UserResponseModel> {
+        return when {
+            model.courseIdForTeacher != null -> {
+                val coursesTeachers = coursesTeacherService.getCoursesTeachersByCourseId(model.courseIdForTeacher)
+                val teachersIds = coursesTeachers.map { it.teacherId }
+                model.ids = teachersIds.toMutableSet()
+                userRepository.getPage(model).map { user -> user.toModel() }
+            }
+            model.courseIdForSubscription != null -> {
+                val coursesSubscription = coursesSubscriptionService.getByCourseId(model.courseIdForSubscription)
+                val teachersIds = coursesSubscription.map { it.id.courseId }
+                model.ids = teachersIds.toMutableSet()
+                userRepository.getPage(model).map { user -> user.toModel() }
+            }
+            else -> {
+                userRepository.getPage(model).map { user -> user.toModel() }
+            }
+        }
+    }
+
+    fun existsTeacherById(id: UUID) = userRepository.existsByIdAndRole(id, Role.TEACHER)
 }
 
 
-fun UserEntity.toModel() = UserResponseModel(
-        id,
-        firstName,
-        lastName,
-        patronymic,
-        email,
-        roles.map { it.userRoleId.role }.toMutableSet(),
-        teacher?.toModel(),
-        "/api/files/avatar/open?id=${id}")
+fun UserEntity.toModel() = UserResponseModel(id, firstName, lastName, patronymic, email, role, "/api/files/avatar/open?id=${id}", startWorkDate, info)
 
-private fun TeacherEntity.toModel() = TeacherModel(startWorkDate, info)
-
-private fun UserEntity.toUserModel() = UserModel(id, firstName, lastName, patronymic, email, password, roles.map { it.userRoleId.role }.toMutableList())
+private fun UserEntity.toUserModel() = UserModel(id, firstName, lastName, patronymic, email, password, role)

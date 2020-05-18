@@ -1,7 +1,6 @@
 package com.lgorev.ksuonlineeducation.repository.user
 
-import com.lgorev.ksuonlineeducation.repository.faculty.FacultyEntity
-import com.lgorev.ksuonlineeducation.repository.teacher.TeacherEntity
+import com.lgorev.ksuonlineeducation.domain.user.Role
 import java.time.LocalDate
 import java.util.*
 import javax.persistence.*
@@ -26,18 +25,13 @@ data class UserEntity(
         var isActive: Boolean = true,
         @Column(name = "registration_date", nullable = false)
         val registrationDate: LocalDate = LocalDate.now(),
-        @OneToMany(
-                cascade = [CascadeType.ALL],
-                orphanRemoval = true,
-                fetch = FetchType.EAGER
-        )
-        @JoinColumn(name = "user_id", referencedColumnName = "id")
-        var roles: MutableSet<UserRoleEntity> = mutableSetOf(),
         @Column(name = "photo_exists")
-        var photoExists: Boolean
-
-) {
-    @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    @JoinColumn(name = "id", referencedColumnName = "user_id")
-    var teacher: TeacherEntity? = null
-}
+        var photoExists: Boolean,
+        @Enumerated(EnumType.STRING)
+        @Column(name = "role")
+        val role: Role,
+        @Column(name = "start_work_date")
+        val startWorkDate: LocalDate?,
+        @Column(name = "info")
+        val info: String?
+)

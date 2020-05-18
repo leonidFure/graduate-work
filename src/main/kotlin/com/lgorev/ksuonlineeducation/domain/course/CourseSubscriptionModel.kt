@@ -4,5 +4,5 @@ import java.util.*
 
 data class CourseSubscriptionModel (
         val courseId: UUID,
-        var userId: UUID
+        var userId: UUID? = null
 )

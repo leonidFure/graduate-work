@@ -1,7 +1,6 @@
 package com.lgorev.ksuonlineeducation.api
 
 import com.lgorev.ksuonlineeducation.domain.common.TokenResponseModel
-import com.lgorev.ksuonlineeducation.domain.user.TeacherRequestModel
 import com.lgorev.ksuonlineeducation.domain.user.UserLoginModel
 import com.lgorev.ksuonlineeducation.domain.user.UserRequestModel
 import com.lgorev.ksuonlineeducation.security.TokenCredentialContainer
@@ -28,10 +27,6 @@ class AuthController(private val authService: AuthService) {
     @PostMapping("register")
     fun register(@RequestBody model: UserRequestModel) = ok(authService.register(model))
 
-    @PermitAll
-    @PostMapping("register/teacher")
-    fun registerTeacher(@RequestBody model: TeacherRequestModel) = ok(authService.register(model))
-
     @PreAuthorize("hasAuthority('REFRESH_TOKEN')")
     @PostMapping("refresh")
     fun refresh(principal: Principal): TokenResponseModel {
@@ -53,5 +48,4 @@ class AuthController(private val authService: AuthService) {
     fun loginWithGoogle(@RequestBody modelUser: UserLoginModel) {
 
     }
-//    TODO("Добавить Oauth 2.0, функционал выхода из системы, рефреша токена, авторизации с помощью ВК и Google")
 }
