@@ -64,7 +64,7 @@ class LessonService(private val lessonRepository: LessonRepository) {
                             }.contains(theme.id)
                         }.map { themeEntity ->
                             themeEntity.toModel()
-                        }.toMutableSet())
+                        }.toMutableSet(), videoUri = it.videoUri)
             }
         } else {
             val lessons = lessonRepository.findLessonPage(model, null).map { it.toModel() }
@@ -81,7 +81,7 @@ class LessonService(private val lessonRepository: LessonRepository) {
                             }.contains(theme.id)
                         }.map { themeEntity ->
                             themeEntity.toModel()
-                        }.toMutableSet())
+                        }.toMutableSet(), videoUri =  it.videoUri)
             }
         }
     }
@@ -106,10 +106,13 @@ class LessonService(private val lessonRepository: LessonRepository) {
                         themeEntity.toModel()
                     }.toMutableSet(),
                     LocalDateTime.of(it.date, find?.startTime),
-                    LocalDateTime.of(it.date, find?.endTime)
+                    LocalDateTime.of(it.date, find?.endTime),
+                    it.videoUri
             )
         }.toMutableList()
     }
+
+    fun getLessonListByCourseId(id: UUID) = lessonRepository.findAllByCourseId(id).map { it.toModel() }
 
     @Throws(NotFoundException::class, BadRequestException::class)
     fun addLesson(model: LessonRequestModel): LessonResponseModel {
@@ -162,7 +165,7 @@ class LessonService(private val lessonRepository: LessonRepository) {
                                 t.type == TimetableType.ODD && day[weekFields.weekOfWeekBasedYear()] % 2 != 0 ||
                                 t.type == TimetableType.EVERY_WEEK) && day.dayOfWeek == t.dayOfWeek
                     }
-                    .map { day -> LessonEntity(UUID.randomUUID(), courseId, t.id, day, LessonStatus.LESSON_CREATED) }
+                    .map { day -> LessonEntity(UUID.randomUUID(), courseId, t.id, day, LessonStatus.LESSON_CREATED, null) }
             )
         }
 
@@ -179,7 +182,7 @@ class LessonService(private val lessonRepository: LessonRepository) {
     }
 }
 
-private fun LessonRequestModel.toEntity() = LessonEntity(id, courseId, timetableId, date, status)
-private fun LessonEntity.toModel() = LessonResponseModel(id, courseId, timetableId, date, status)
+private fun LessonRequestModel.toEntity() = LessonEntity(id, courseId, timetableId, date, status, videoUri)
+private fun LessonEntity.toModel() = LessonResponseModel(id, courseId, timetableId, date, status, videoUri = videoUri)
 private fun ThemeEntity.toModel() = ThemeResponseModel(id, parentThemeId, number, educationProgramId, name, description)
 

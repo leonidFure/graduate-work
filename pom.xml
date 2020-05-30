@@ -126,8 +126,16 @@
             <artifactId>hibernate-jpamodelgen</artifactId>
             <version>5.4.14.Final</version>
         </dependency>
-
-
+        <dependency>
+            <groupId>com.clickntap</groupId>
+            <artifactId>vimeo</artifactId>
+            <version>1.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.4.1</version>
+        </dependency>
     </dependencies>
 
     <build>

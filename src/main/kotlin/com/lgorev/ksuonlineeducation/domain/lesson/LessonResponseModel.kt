@@ -34,5 +34,6 @@ data class LessonResponseModel(
         @JsonSerialize(using = LocalDateTimeSerializer::class)
         @JsonDeserialize(using = LocalDateTimeDeserializer::class)
         @DateTimeFormat
-        val endTime: LocalDateTime? = null
+        val endTime: LocalDateTime? = null,
+        val videoUri: String?
 )

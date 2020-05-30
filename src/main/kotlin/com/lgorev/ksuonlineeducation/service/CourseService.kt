@@ -81,7 +81,6 @@ class CourseService(private val courseRepository: CourseRepository) {
                 if (subscriptions != null) c.hasSubscription = subscriptions.contains(courseSubscription)
             }
         }
-
         return result
     }
 

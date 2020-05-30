@@ -16,7 +16,8 @@ data class LessonRequestModel (
         @JsonDeserialize(using = LocalDateDeserializer::class)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         val date: LocalDate,
-        val status: LessonStatus = LessonStatus.LESSON_CREATED
+        val status: LessonStatus = LessonStatus.LESSON_CREATED,
+        val videoUri: String?
 )
 
 enum class LessonStatus { LESSON_CREATED, LESSON_IN_PROGRESS, LESSON_DONE }

@@ -9,4 +9,5 @@ import java.util.*
 interface LessonRepository : PagingAndSortingRepository<LessonEntity, UUID>, LessonPagingRepository {
     fun deleteAllByCourseId(courseId: UUID)
     fun findAllByCourseIdInAndDateBetween(courseIds: MutableSet<UUID>, fromDate: LocalDate, toDate: LocalDate): MutableList<LessonEntity>
+    fun findAllByCourseId(courseId: UUID): MutableList<LessonEntity>
 }

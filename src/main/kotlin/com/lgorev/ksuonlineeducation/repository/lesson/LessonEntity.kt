@@ -19,6 +19,8 @@ data class LessonEntity(
         var date: LocalDate,
         @Column(name = "status")
         @Enumerated(value = EnumType.STRING)
-        var status: LessonStatus
+        var status: LessonStatus,
+        @Column(name = "video_uri")
+        var videoUri: String?
 )
 
