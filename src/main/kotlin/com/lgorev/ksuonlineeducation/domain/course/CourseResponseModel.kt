@@ -33,6 +33,7 @@ data class CourseResponseModel(
         var rating: Double? = 0.0,
         var ratingCount: Long? = 0,
         var hasSubscription: Boolean = false,
-        val creatorId: UUID?
+        val creatorId: UUID?,
+        val imageId: UUID?
 )
 

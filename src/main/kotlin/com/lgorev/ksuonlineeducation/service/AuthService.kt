@@ -14,6 +14,7 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.crypto.bcrypt.BCrypt
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -105,6 +106,7 @@ class AuthService(private val userRepository: UserRepository) {
         sessionService.deleteSession(sessionId)
     }
 
+
     private fun generateAccessToken(userId: UUID, email: String, role: Role, sessionId: UUID): String? {
         return Jwts
                 .builder()
@@ -147,10 +149,10 @@ private fun UserRequestModel.toUserEntity(): UserEntity {
             BCrypt.hashpw(password, BCrypt.gensalt(12)),
             true,
             LocalDate.now(),
-            false,
             role,
             startWorkDate,
-            info
+            info,
+            null
     )
 }
 

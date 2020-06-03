@@ -14,5 +14,6 @@ data class UserResponseModel(
         val role: Role,
         val photoUrl: String,
         val startWorkDate: LocalDate?,
-        val info: String?
+        val info: String?,
+        val imageId: UUID?
 )

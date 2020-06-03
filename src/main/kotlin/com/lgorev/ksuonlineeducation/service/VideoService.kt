@@ -1,14 +1,18 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.domain.video.CreateVideoModel
+import com.lgorev.ksuonlineeducation.domain.video.Upload
 import com.lgorev.ksuonlineeducation.domain.video.VideoPageRequestModel
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
+import com.lgorev.ksuonlineeducation.exception.VimeoResponseException
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.VimeoClient
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.model.Video
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.model.VideoPage
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.model.VimeoVideoPageRequestModel
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 @Service
@@ -42,14 +46,24 @@ class VideoService {
 
     fun updateVideoInfo(lessonId: UUID, model: VideoRequestModel): Video {
         val lesson = lessonService.getLessonById(lessonId)
-        if (lesson.videoUri == null) throw BadRequestException("Ошибка с сервисом Vimeo")
-        return vimeoClient.editVideo(lesson.videoUri, model) ?: throw BadRequestException("Ошибка с сервисом Vimeo")
+        if (lesson.videoUri == null) throw VimeoResponseException()
+        return vimeoClient.editVideo(lesson.videoUri, model) ?: throw VimeoResponseException()
     }
 
     fun deleteVideo(lessonId: UUID) {
         val lesson = lessonService.getLessonById(lessonId)
-        if (lesson.videoUri == null) throw BadRequestException("Ошибка с сервисом Vimeo")
+        if (lesson.videoUri == null) throw VimeoResponseException()
         vimeoClient.deleteVideo(lesson.videoUri)
+    }
+
+    @Throws(VimeoResponseException::class)
+    fun uploadVideo(file: MultipartFile, lessonId: UUID) {
+        val requestModel = CreateVideoModel(Upload(size = file.size, redirectUri = "http://localhost:8080/static/success"))
+        val video = vimeoClient.createVideo(requestModel) ?: throw VimeoResponseException()
+        if (video.upload.uploadLink == null) throw VimeoResponseException()
+        vimeoClient.uploadVideo(video.upload.uploadLink, file)
+        if (video.uri == null) throw VimeoResponseException()
+        lessonService.setVideoUriToVideo(lessonId, video.uri)
     }
 }
 

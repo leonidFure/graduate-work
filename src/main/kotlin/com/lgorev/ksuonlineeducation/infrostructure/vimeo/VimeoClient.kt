@@ -1,20 +1,23 @@
 package com.lgorev.ksuonlineeducation.infrostructure.vimeo
 
+import com.lgorev.ksuonlineeducation.domain.video.CreateVideoModel
 import com.lgorev.ksuonlineeducation.exception.VimeoResponseException
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.model.Video
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.model.VideoPage
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.model.VimeoVideoPageRequestModel
 import com.lgorev.ksuonlineeducation.service.VideoRequestModel
-import org.apache.http.HttpHeaders.TIMEOUT
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpHeaders.AUTHORIZATION
+import org.springframework.http.HttpHeaders.*
 import org.springframework.http.HttpMethod.*
-import org.springframework.http.MediaType
+import org.springframework.http.MediaType.*
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.stereotype.Service
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.util.UriComponentsBuilder
 
 
@@ -27,26 +30,29 @@ class VimeoClient {
     @Value("\${vimeo.url}")
     private lateinit var vimeoUrl: String
 
-    fun getUserVideos(modelVimeo: VimeoVideoPageRequestModel): VideoPage? {
-        val url = "${vimeoUrl}/me/videos"
-        val params = mutableMapOf(
-                "direction" to modelVimeo.direction,
-                "page" to modelVimeo.pageNum.toString(),
-                "per_page" to modelVimeo.pageSize.toString(),
-                "sort" to modelVimeo.sortField
-        )
-        return get(url, vimeoAccessToken, params)
-    }
-
     fun getVideo(uri: String): Video? {
         val url = "${vimeoUrl}${uri}"
         return get(url, vimeoAccessToken)
     }
 
-    fun uploadVideo() {
-        TODO("реализация идет в несколько методов, " +
-                "ознакомиться с API https://developer.vimeo.com/api/upload/videos" +
-                "реализовть каждый из методов отельно или объеденять пока не понятно")
+    fun getVideoPage(model: VimeoVideoPageRequestModel): VideoPage? {
+        val url = "${vimeoUrl}/videos"
+        val params = mutableMapOf(
+                "direction" to model.direction,
+                "page" to model.pageNum.toString(),
+                "per_page" to model.pageSize.toString(),
+                "uris" to model.videoUrls
+        )
+        return get(url, vimeoAccessToken, params)
+    }
+
+    fun createVideo(model: CreateVideoModel): Video? {
+        val uri = "${vimeoUrl}/me/videos"
+        return post(uri, vimeoAccessToken, model)
+    }
+
+    fun uploadVideo(url: String, file: MultipartFile) {
+        postFile(url, vimeoAccessToken, file)
     }
 
     fun editVideo(videoUri: String, model: VideoRequestModel): Video? {
@@ -68,19 +74,11 @@ class VimeoClient {
         TODO("GET https://api.vimeo.com/videos/{video_id}")
     }
 
-//    fun createVideo()
-
-    fun getVideoPage(model: VimeoVideoPageRequestModel): VideoPage? {
-        val url = "${vimeoUrl}/videos"
-        /*
-        * Сортировка по дате не работает на стороне клиента
-        * */
-        val params = mutableMapOf("direction" to model.direction, "page" to model.pageNum.toString(), "per_page" to model.pageSize.toString()
-        )
-        return get(url, vimeoAccessToken, params)
-    }
 
     private companion object {
+
+        const val VIMEO_ACCEPT = "application/vnd.vimeo.*+json;version=3.4"
+
         /**
          * GET method for Vimeo API.
          *
@@ -98,6 +96,8 @@ class VimeoClient {
             val headers = HttpHeaders()
             val token = "bearer $accessToken"
             headers[AUTHORIZATION] = token
+            headers[ACCEPT] = VIMEO_ACCEPT
+
             val request = HttpEntity<Unit>(headers)
             var httpUrl = UriComponentsBuilder.fromHttpUrl(url)
             params?.forEach { (k, v) -> httpUrl = httpUrl.queryParam(k, v) }
@@ -128,11 +128,41 @@ class VimeoClient {
             val headers = HttpHeaders()
             val token = "bearer $accessToken"
             headers[AUTHORIZATION] = token
+            headers[ACCEPT] = VIMEO_ACCEPT
             val request = HttpEntity<R>(body, headers)
             try {
                 val response = restTemplate.exchange(url, POST, request, T::class.java)
                 if (response.statusCode.isError) throw VimeoResponseException("Ошибка при зарпосе к сервису Vimeo")
                 return response.body
+            } catch (e: Throwable) {
+                throw VimeoResponseException(e.message)
+            }
+        }
+
+        /**
+         * PUT method for Vimeo API
+         *
+         * Replaces a resource or associates one resource with another.
+         *
+         * @property url the url of API
+         * @property accessToken the token of authorization user in Vimeo
+         * @property file the file to upload
+         * @throws VimeoResponseException
+         * */
+        fun postFile(url: String, accessToken: String, file: MultipartFile) {
+            val restTemplate = RestTemplate()
+            val headers = HttpHeaders()
+            val token = "bearer $accessToken"
+            headers[AUTHORIZATION] = token
+            headers[ACCEPT] = VIMEO_ACCEPT
+            headers[CONTENT_TYPE] = MULTIPART_FORM_DATA_VALUE
+            val body = LinkedMultiValueMap<String, Any>()
+            body["file_data"] = file.resource
+            val request = HttpEntity<MultiValueMap<String, Any>>(body, headers)
+            try {
+                val response = restTemplate.exchange(url, POST, request, Any::class.java)
+                if (response.statusCode.isError)
+                    throw VimeoResponseException("Ошибка при зарпосе к сервису Vimeo")
             } catch (e: Throwable) {
                 throw VimeoResponseException(e.message)
             }
@@ -156,6 +186,7 @@ class VimeoClient {
             val headers = HttpHeaders()
             val token = "bearer $accessToken"
             headers[AUTHORIZATION] = token
+            headers[ACCEPT] = VIMEO_ACCEPT
             val request = HttpEntity<R>(body, headers)
             try {
                 val response = restTemplate.exchange(url, PUT, request, T::class.java)
@@ -184,9 +215,9 @@ class VimeoClient {
             val requestFactory = HttpComponentsClientHttpRequestFactory()
             restTemplate.requestFactory = requestFactory
             val headers = HttpHeaders()
-            headers.contentType = MediaType.APPLICATION_JSON
             val token = "bearer $accessToken"
             headers[AUTHORIZATION] = token
+            headers[ACCEPT] = VIMEO_ACCEPT
             val request = HttpEntity<R>(body, headers)
             try {
                 val response = restTemplate.exchange(url, PATCH, request, T::class.java)
@@ -212,6 +243,7 @@ class VimeoClient {
             val headers = HttpHeaders()
             val token = "bearer $accessToken"
             headers[AUTHORIZATION] = token
+            headers[ACCEPT] = VIMEO_ACCEPT
             val request = HttpEntity<Unit>(headers)
             try {
                 val response = restTemplate.exchange(url, DELETE, request, Unit::class.java)

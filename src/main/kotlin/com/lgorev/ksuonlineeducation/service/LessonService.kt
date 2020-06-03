@@ -46,6 +46,8 @@ class LessonService(private val lessonRepository: LessonRepository) {
         throw NotFoundException("Занятие не найдено")
     }
 
+    fun existsLessonById(id: UUID) = lessonRepository.existsById(id)
+
     fun getLessonPage(model: LessonRequestPageModel): PageResponseModel<LessonResponseModel> {
         return if (model.themeIds.isNotEmpty()) {
             val lessonsThemesIds = lessonsThemesService.getLessonsThemesByThemeIds(model.themeIds)
@@ -81,7 +83,7 @@ class LessonService(private val lessonRepository: LessonRepository) {
                             }.contains(theme.id)
                         }.map { themeEntity ->
                             themeEntity.toModel()
-                        }.toMutableSet(), videoUri =  it.videoUri)
+                        }.toMutableSet(), videoUri = it.videoUri)
             }
         }
     }
@@ -179,6 +181,10 @@ class LessonService(private val lessonRepository: LessonRepository) {
         val courseId = timetables.first().courseId
         lessonRepository.deleteAllByCourseId(courseId)
         addLessonsForCourse(timetables)
+    }
+
+    fun setVideoUriToVideo(id: UUID, videoUri: String) {
+        lessonRepository.findByIdOrNull(id)?.let { it.videoUri = videoUri }
     }
 }
 

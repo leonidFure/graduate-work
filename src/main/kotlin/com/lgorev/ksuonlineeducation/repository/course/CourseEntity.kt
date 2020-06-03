@@ -25,7 +25,9 @@ data class CourseEntity(
         @Column(name = "is_actual")
         var isActual: Boolean = true,
         @Column(name = "creator_id")
-        val creatorId: UUID?
+        val creatorId: UUID?,
+        @Column(name = "image_id")
+        var imageId: UUID?
 ) {
     companion object Fields {
         const val ID = "id"

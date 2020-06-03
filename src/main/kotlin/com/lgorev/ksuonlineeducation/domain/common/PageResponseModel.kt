@@ -9,3 +9,5 @@ inline fun <E, R> PageResponseModel<E>.map(transform: (E) -> R): PageResponseMod
     val content = this.content.map(transform).toMutableSet()
     return PageResponseModel(content, totalCount)
 }
+
+fun <T> PageResponseModel<T>.forEach(action: (T) -> Unit) = content.forEach(action)

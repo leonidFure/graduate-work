@@ -6,6 +6,7 @@ import com.lgorev.ksuonlineeducation.service.VideoService
 import org.springframework.http.ResponseEntity.ok
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 @RestController
@@ -27,4 +28,8 @@ class VideoController(private val videoService: VideoService) {
     @DeleteMapping
     @PreAuthorize("isAuthenticated()")
     fun deleteVideo(@RequestParam id: UUID) = ok(videoService.deleteVideo(id))
+
+    @PostMapping("{lessonId}")
+    @PreAuthorize("isAuthenticated()")
+    fun uploadVideo(@RequestBody file: MultipartFile, @PathVariable lessonId: UUID) = ok(videoService.uploadVideo(file, lessonId))
 }

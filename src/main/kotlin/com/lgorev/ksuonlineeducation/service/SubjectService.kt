@@ -70,8 +70,13 @@ class SubjectService(private val subjectRepository: SubjectRepository) {
     }
 
     fun getSubjectListByIds(model: SubjectListRequestModel) = subjectRepository.findByIdIn(model.ids).map { it.toModel() }
+
+
+    fun setImageId(subjectId: UUID, imageId: UUID) {
+        subjectRepository.findByIdOrNull(subjectId)?.let { it.imageId = imageId }
+    }
 }
 
-private fun SubjectRequestModel.toEntity() = SubjectEntity(id, name, description, type)
+private fun SubjectRequestModel.toEntity() = SubjectEntity(id, name, description, type, null)
 
-private fun SubjectEntity.toModel() = SubjectResponseModel(id, name, description, type)
+private fun SubjectEntity.toModel() = SubjectResponseModel(id, name, description, type, imageId)

@@ -16,6 +16,8 @@ data class SubjectEntity(
         var description: String,
         @Column(name = "type")
         @Enumerated(value = EnumType.STRING)
-        var type: SubjectType
+        var type: SubjectType,
+        @Column(name = "image_id")
+        var imageId: UUID?
 )
 

@@ -131,10 +131,14 @@ class CourseService(private val courseRepository: CourseRepository) {
         courses.forEach { c -> c.educationProgram = educationPrograms.find { ed -> ed.id == c.educationProgramId } }
         return courses
     }
+
+    fun setImageId(courseId: UUID, imageId: UUID) {
+        courseRepository.findByIdOrNull(courseId)?.let { it.imageId = imageId }
+    }
 }
 
 private fun CourseRequestModel.toEntity(creatorId: UUID?) =
-        CourseEntity(id, educationProgramId, status, startDate, endDate, creationDate, isActual, creatorId)
+        CourseEntity(id, educationProgramId, status, startDate, endDate, creationDate, isActual, creatorId, null)
 
 private fun CourseEntity.toModel() =
         CourseResponseModel(
@@ -147,7 +151,8 @@ private fun CourseEntity.toModel() =
                 creationDate,
                 isActual,
                 "/api/files/course/open?id=${id}",
-                creatorId = creatorId
+                creatorId = creatorId,
+                imageId = imageId
         )
 
 

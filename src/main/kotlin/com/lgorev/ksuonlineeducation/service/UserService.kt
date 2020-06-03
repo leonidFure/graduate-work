@@ -64,12 +64,6 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
 
     fun existUserById(id: UUID) = userRepository.existsById(id)
 
-    fun setUserPhotoExists(id: UUID) {
-        userRepository.findByIdOrNull(id)?.let { user ->
-            user.photoExists = true
-        }
-    }
-
     fun getPage(model: UserPageRequestModel): PageResponseModel<UserResponseModel> {
         return when {
             model.courseIdForTeacher != null -> {
@@ -91,9 +85,14 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
     }
 
     fun existsTeacherById(id: UUID) = userRepository.existsByIdAndRole(id, Role.TEACHER)
+
+    fun setImageId(userId: UUID, imageId: UUID) {
+        userRepository.findByIdOrNull(userId)?.let { it.imageId = imageId }
+    }
+
 }
 
 
-fun UserEntity.toModel() = UserResponseModel(id, firstName, lastName, patronymic, email, role, "/api/files/avatar/open?id=${id}", startWorkDate, info)
+fun UserEntity.toModel() = UserResponseModel(id, firstName, lastName, patronymic, email, role, "/api/files/avatar/open?id=${id}", startWorkDate, info, imageId)
 
 private fun UserEntity.toUserModel() = UserModel(id, firstName, lastName, patronymic, email, password, role)

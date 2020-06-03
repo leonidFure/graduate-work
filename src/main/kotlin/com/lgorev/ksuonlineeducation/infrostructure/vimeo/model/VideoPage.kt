@@ -33,7 +33,8 @@ data class Video(
         val status: String?,
         val transcode: Transcode,
         val type: String?,
-        val uri: String?
+        val uri: String?,
+        val upload: Upload
 )
 
 data class Embed(
@@ -86,6 +87,20 @@ data class User(
         @JsonProperty("resource_key")
         val resourceKey: String?,
         val uri: String?
+)
+
+data class Upload (
+        val status: String?,
+        val link: String?,
+        @JsonProperty("upload_link")
+        val uploadLink: String?,
+        @JsonProperty("complete_uri")
+        val completeUri: String?,
+        val form: String?,
+        val approach: String?,
+        val size: Long?,
+        @JsonProperty("redirect_url")
+        val redirectUrl: String?
 )
 
 data class Pictures(
