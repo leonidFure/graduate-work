@@ -110,7 +110,7 @@ class CourseService(private val courseRepository: CourseRepository) {
         val educationProgram = educationProgramService.getEducationProgramById(model.educationProgramId)
         val userId = getUserId(principal)
         val course = courseRepository.save(model.toEntity(userId)).toModel()
-        liveEventService.createLiveEvent(educationProgram.name, course.id)
+//        liveEventService.createLiveEvent(educationProgram.name, course.id)
     }
 
     @Throws(NotFoundException::class, BadRequestException::class)
