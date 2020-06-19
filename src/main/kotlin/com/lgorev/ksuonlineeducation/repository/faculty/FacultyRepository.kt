@@ -8,10 +8,11 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface FacultyRepository : JpaRepository<FacultyEntity, UUID> {
+interface FacultyRepository : JpaRepository<FacultyEntity, UUID>, FacultyPagingRepository {
     fun findByName(name: String): FacultyEntity?
     fun existsByManagerId(managerId: UUID): Boolean
     fun findByManagerId(managerId: UUID): FacultyEntity?
     fun existsByName(name: String): Boolean
     fun findAllByNameContainingIgnoreCase(pageable: Pageable, name: String): Page<FacultyEntity>
+    fun findAllByIdIn(ids: Set<UUID>): MutableSet<FacultyEntity>
 }

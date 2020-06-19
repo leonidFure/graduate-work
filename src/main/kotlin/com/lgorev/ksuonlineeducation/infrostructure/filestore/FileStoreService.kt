@@ -73,15 +73,18 @@ class FileStoreService(private val resourceLoader: ResourceLoader) {
         val fullFileName = "$fileName$extension"
         val newFile = when (fileType) {
             AVATAR -> {
-                Files.createDirectory(Path.of("$pathLessons/$id"))
+                val path = Path.of("$pathLessons/$id")
+                if(!Files.exists(path)) Files.createDirectory(path)
                 Paths.get("$pathLessons/$id", fullFileName)
             }
             COURSE_IMAGE -> {
-                Files.createDirectory(Path.of("$pathCourse/$id"))
+                val path = Path.of("$pathCourse/$id")
+                if(!Files.exists(path)) Files.createDirectory(path)
                 Paths.get("$pathCourse/$id", fullFileName)
             }
             SUBJECT_IMAGE -> {
-                Files.createDirectory(Path.of("$pathSubject/$id"))
+                val path = Path.of("$pathSubject/$id")
+                if(!Files.exists(path)) Files.createDirectory(path)
                 Paths.get("$pathSubject/$id", fullFileName)
             }
             else -> throw BadRequestException("Невалидынй файл")
@@ -115,6 +118,7 @@ class FileStoreService(private val resourceLoader: ResourceLoader) {
     private fun isValidFileType(file: MultipartFile) = validFileTypes.contains(file.contentType)
 
     private fun isValidFileSize(file: MultipartFile) = file.size < MAX_VALID_SIZE
+
     fun deleteLessonFile(lessonId: UUID, file: FileModel) {
         val path = Path.of("$pathLessons/$lessonId/${file.name}")
         if (Files.exists(path)) Files.delete(path)

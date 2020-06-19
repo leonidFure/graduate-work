@@ -12,12 +12,12 @@ data class EducationProgramRequestModel(
         val id: UUID = UUID.randomUUID(),
         val subjectId: UUID,
         val name: String,
-        val description: String,
+        val description: String?,
         @JsonSerialize(using = LocalDateSerializer::class)
         @JsonDeserialize(using = LocalDateDeserializer::class)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         val creationDate: LocalDate = LocalDate.now(),
-        val status: EducationProgramStatus,
+        val status: EducationProgramStatus = EducationProgramStatus.EP_CREATED,
         val isActual: Boolean = true
 )
 

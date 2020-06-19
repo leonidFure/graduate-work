@@ -42,7 +42,16 @@ class LessonService(private val lessonRepository: LessonRepository) {
 
     @Throws(NotFoundException::class)
     fun getLessonById(id: UUID): LessonResponseModel {
-        lessonRepository.findByIdOrNull(id)?.let { return it.toModel() }
+        lessonRepository.findByIdOrNull(id)?.let { lesson ->
+            val lessonsThemes = lessonsThemesService.getLessonsThemesByLessonId(lesson.id)
+            val themeIds = lessonsThemes.map { it.lessonsThemesId.themesId }.toMutableSet()
+            val themes = themeService.getThemesByIds(themeIds).map { it.toModel() }.toMutableSet()
+            val timetableById = timetableService.getTimetableById(lesson.timetableId)
+            val model = lesson.toModel(themes, timetableById)
+            val now = LocalDateTime.now()
+            model.isLiveEventAvailable = now.isAfter(model.startTime) && now.isBefore(model.endTime)
+            return model
+        }
         throw NotFoundException("Занятие не найдено")
     }
 
@@ -54,9 +63,12 @@ class LessonService(private val lessonRepository: LessonRepository) {
             val ids = lessonsThemesIds.map { it.lessonsThemesId.lessonId }.toMutableSet()
             val lessons = lessonRepository.findLessonPage(model, ids).map { it.toModel() }
             val lessonsIds = lessons.map { it.id }.content
+            val timetableIds = lessons.content.map { it.timetableId }.distinct()
+            val timetables = timetableService.getTimetablesByIds(timetableIds)
             val lessonsThemes = lessonsThemesService.getLessonsThemesByLessonIds(lessonsIds)
             val themes = themeService.getThemesByIds(lessonsThemes.map { it.lessonsThemesId.themesId }.toMutableSet())
             lessons.map {
+                val find = timetables.find { timetable -> timetable.id == it.timetableId }
                 LessonResponseModel(it.id, it.courseId, it.timetableId, it.date, it.status,
                         themes.filter { theme ->
                             lessonsThemes.filter { ls ->
@@ -66,14 +78,20 @@ class LessonService(private val lessonRepository: LessonRepository) {
                             }.contains(theme.id)
                         }.map { themeEntity ->
                             themeEntity.toModel()
-                        }.toMutableSet(), videoUri = it.videoUri)
+                        }.toMutableSet(),
+                        LocalDateTime.of(it.date, find?.startTime),
+                        LocalDateTime.of(it.date, find?.endTime),
+                        videoUri = it.videoUri)
             }
         } else {
             val lessons = lessonRepository.findLessonPage(model, null).map { it.toModel() }
             val lessonsIds = lessons.map { it.id }.content
+            val timetableIds = lessons.content.map { it.timetableId }.distinct()
+            val timetables = timetableService.getTimetablesByIds(timetableIds)
             val lessonsThemes = lessonsThemesService.getLessonsThemesByLessonIds(lessonsIds)
             val themes = themeService.getThemesByIds(lessonsThemes.map { it.lessonsThemesId.themesId }.toMutableSet())
             lessons.map {
+                val find = timetables.find { timetable -> timetable.id == it.timetableId }
                 LessonResponseModel(it.id, it.courseId, it.timetableId, it.date, it.status,
                         themes.filter { theme ->
                             lessonsThemes.filter { ls ->
@@ -83,7 +101,11 @@ class LessonService(private val lessonRepository: LessonRepository) {
                             }.contains(theme.id)
                         }.map { themeEntity ->
                             themeEntity.toModel()
-                        }.toMutableSet(), videoUri = it.videoUri)
+                        }.toMutableSet(),
+                        LocalDateTime.of(it.date, find?.startTime),
+                        LocalDateTime.of(it.date, find?.endTime),
+                        videoUri = it.videoUri)
+
             }
         }
     }
@@ -190,5 +212,7 @@ class LessonService(private val lessonRepository: LessonRepository) {
 
 private fun LessonRequestModel.toEntity() = LessonEntity(id, courseId, timetableId, date, status, videoUri)
 private fun LessonEntity.toModel() = LessonResponseModel(id, courseId, timetableId, date, status, videoUri = videoUri)
+private fun LessonEntity.toModel(themes: MutableSet<ThemeResponseModel>) = LessonResponseModel(id, courseId, timetableId, date, status, videoUri = videoUri, themes = themes)
+private fun LessonEntity.toModel(themes: MutableSet<ThemeResponseModel>, timetable: TimetableResponseModel) = LessonResponseModel(id, courseId, timetableId, date, status, startTime = LocalDateTime.of(date, timetable.startTime), endTime = LocalDateTime.of(date, timetable.endTime), videoUri = videoUri, themes = themes)
 private fun ThemeEntity.toModel() = ThemeResponseModel(id, parentThemeId, number, educationProgramId, name, description)
 

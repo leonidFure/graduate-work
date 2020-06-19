@@ -39,5 +39,6 @@ data class CourseRequestPageModel(
         val isSelf: Boolean = false,
         var userId: UUID? = null,
         var subscriberId: UUID? = null,
-        val sortField: String = "startDate"
+        val sortField: String = "startDate",
+        val subjectId: UUID? = null
 )

@@ -38,7 +38,7 @@ class SubjectPagingRepositoryImpl(@PersistenceContext private val em: EntityMana
         countQuery.select(cb.count(countQuery.from(subject)))
         countQuery.where(cb.and(*predicates.toTypedArray()))
         val typedQuery = em.createQuery(cq)
-        typedQuery.firstResult = (model.pageNum) * model.pageSize
+        typedQuery.firstResult = (model.pageNum - 1) * model.pageSize
         typedQuery.maxResults = model.pageSize
         val query = em.createQuery(countQuery)
         val count = query.singleResult

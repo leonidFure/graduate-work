@@ -7,6 +7,7 @@ import com.lgorev.ksuonlineeducation.domain.course.CourseRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.course.CourseResponseModel
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
+import com.lgorev.ksuonlineeducation.infrostructure.wowza.WowzaClient
 import com.lgorev.ksuonlineeducation.repository.course.*
 import com.lgorev.ksuonlineeducation.util.getUserId
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,6 +33,12 @@ class CourseService(private val courseRepository: CourseRepository) {
 
     @Autowired
     private lateinit var coursesTeachersService: CoursesTeachersService
+
+    @Autowired
+    private lateinit var userService: UserService
+
+    @Autowired
+    private lateinit var liveEventService: LiveEventService
 
     @Throws(NotFoundException::class)
     fun getCourseById(id: UUID, userId: UUID?): CourseResponseModel {
@@ -63,6 +70,16 @@ class CourseService(private val courseRepository: CourseRepository) {
             val educationPrograms = educationProgramService.getListByName(model.nameFilter)
             model.educationProgramIds = educationPrograms.map { it.id }.toMutableSet()
         }
+
+        if (model.subjectId != null) {
+            val educationPrograms = educationProgramService.getListBySubjectId(model.subjectId)
+            val ids = educationPrograms.map { it.id }.toMutableSet()
+            if (model.educationProgramIds != null) {
+                model.educationProgramIds = (model.educationProgramIds!! intersect ids).toMutableSet()
+            } else {
+                model.educationProgramIds = ids
+            }
+        }
         val courses = courseRepository.findPage(model)
         val ids = courses.content.map { it.educationProgramId }.toMutableSet()
         val courseIds = courses.content.map { it.id }.toMutableSet()
@@ -87,14 +104,13 @@ class CourseService(private val courseRepository: CourseRepository) {
     fun existCourseById(id: UUID) = courseRepository.existsById(id)
 
     @Throws(NotFoundException::class, BadRequestException::class)
-    fun addCourse(model: CourseRequestModel, principal: Principal): CourseResponseModel {
+    fun addCourse(model: CourseRequestModel, principal: Principal) {
         if (model.endDate.isBefore(model.startDate))
             throw BadRequestException("Период обучени задан некоретно")
-        if (!educationProgramService.existEducationProgramById(model.educationProgramId))
-            throw NotFoundException("Программа обучения не найдена")
+        val educationProgram = educationProgramService.getEducationProgramById(model.educationProgramId)
         val userId = getUserId(principal)
-
-        return courseRepository.save(model.toEntity(userId)).toModel()
+        val course = courseRepository.save(model.toEntity(userId)).toModel()
+        liveEventService.createLiveEvent(educationProgram.name, course.id)
     }
 
     @Throws(NotFoundException::class, BadRequestException::class)
@@ -116,8 +132,6 @@ class CourseService(private val courseRepository: CourseRepository) {
     fun deleteCourse(id: UUID) {
         if (courseRepository.existsById(id))
             courseRepository.deleteById(id)
-
-
     }
 
     fun getSubjectId(id: UUID) = courseRepository.getSubjectIdById(id)
@@ -135,6 +149,11 @@ class CourseService(private val courseRepository: CourseRepository) {
     fun setImageId(courseId: UUID, imageId: UUID) {
         courseRepository.findByIdOrNull(courseId)?.let { it.imageId = imageId }
     }
+
+    fun changeLiveEventId(courseId: UUID, id: String) {
+        courseRepository.findByIdOrNull(courseId)?.let { it.wowzaLiveEventId = id }
+
+    }
 }
 
 private fun CourseRequestModel.toEntity(creatorId: UUID?) =
@@ -150,7 +169,7 @@ private fun CourseEntity.toModel() =
                 endDate,
                 creationDate,
                 isActual,
-                "/api/files/course/open?id=${id}",
+                "/api/files/courses?id=${id}",
                 creatorId = creatorId,
                 imageId = imageId
         )

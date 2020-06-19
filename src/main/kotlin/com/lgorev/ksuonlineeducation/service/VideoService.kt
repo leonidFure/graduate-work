@@ -3,9 +3,8 @@ package com.lgorev.ksuonlineeducation.service
 import com.lgorev.ksuonlineeducation.domain.video.CreateVideoModel
 import com.lgorev.ksuonlineeducation.domain.video.Upload
 import com.lgorev.ksuonlineeducation.domain.video.VideoPageRequestModel
-import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
-import com.lgorev.ksuonlineeducation.exception.VimeoResponseException
+import com.lgorev.ksuonlineeducation.exception.VideoResponseException
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.VimeoClient
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.model.Video
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.model.VideoPage
@@ -46,23 +45,23 @@ class VideoService {
 
     fun updateVideoInfo(lessonId: UUID, model: VideoRequestModel): Video {
         val lesson = lessonService.getLessonById(lessonId)
-        if (lesson.videoUri == null) throw VimeoResponseException()
-        return vimeoClient.editVideo(lesson.videoUri, model) ?: throw VimeoResponseException()
+        if (lesson.videoUri == null) throw VideoResponseException()
+        return vimeoClient.editVideo(lesson.videoUri, model) ?: throw VideoResponseException()
     }
 
     fun deleteVideo(lessonId: UUID) {
         val lesson = lessonService.getLessonById(lessonId)
-        if (lesson.videoUri == null) throw VimeoResponseException()
+        if (lesson.videoUri == null) throw VideoResponseException()
         vimeoClient.deleteVideo(lesson.videoUri)
     }
 
-    @Throws(VimeoResponseException::class)
+    @Throws(VideoResponseException::class)
     fun uploadVideo(file: MultipartFile, lessonId: UUID) {
         val requestModel = CreateVideoModel(Upload(size = file.size, redirectUri = "http://localhost:8080/static/success"))
-        val video = vimeoClient.createVideo(requestModel) ?: throw VimeoResponseException()
-        if (video.upload.uploadLink == null) throw VimeoResponseException()
+        val video = vimeoClient.createVideo(requestModel) ?: throw VideoResponseException()
+        if (video.upload.uploadLink == null) throw VideoResponseException()
         vimeoClient.uploadVideo(video.upload.uploadLink, file)
-        if (video.uri == null) throw VimeoResponseException()
+        if (video.uri == null) throw VideoResponseException()
         lessonService.setVideoUriToVideo(lessonId, video.uri)
     }
 }

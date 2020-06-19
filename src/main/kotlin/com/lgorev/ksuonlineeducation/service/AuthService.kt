@@ -138,7 +138,7 @@ class AuthService(private val userRepository: UserRepository) {
     }
 }
 
-private fun UserRequestModel.toUserEntity(): UserEntity {
+fun UserRequestModel.toUserEntity(): UserEntity {
     val userId = UUID.randomUUID()
     return UserEntity(
             userId,

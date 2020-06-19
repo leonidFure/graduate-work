@@ -1,7 +1,7 @@
 package com.lgorev.ksuonlineeducation.infrostructure.vimeo
 
 import com.lgorev.ksuonlineeducation.domain.video.CreateVideoModel
-import com.lgorev.ksuonlineeducation.exception.VimeoResponseException
+import com.lgorev.ksuonlineeducation.exception.VideoResponseException
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.model.Video
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.model.VideoPage
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.model.VimeoVideoPageRequestModel
@@ -65,7 +65,6 @@ class VimeoClient {
         delete(url, vimeoAccessToken)
     }
 
-
     fun getUserVimeoInfo() {
         TODO("GET https://api.vimeo.com/videos/{video_id}")
     }
@@ -88,9 +87,9 @@ class VimeoClient {
          * @property url the url of API
          * @property accessToken the token of authorization user in Vimeo
          * @property params the map of params (keys and values). Can be null
-         * @throws VimeoResponseException
+         * @throws VideoResponseException
          * */
-        @Throws(VimeoResponseException::class)
+        @Throws(VideoResponseException::class)
         inline fun <reified T : Any> get(url: String, accessToken: String, params: MutableMap<String, String>? = null): T? {
             val restTemplate = RestTemplate()
             val headers = HttpHeaders()
@@ -103,10 +102,10 @@ class VimeoClient {
             params?.forEach { (k, v) -> httpUrl = httpUrl.queryParam(k, v) }
             try {
                 val response = restTemplate.exchange(httpUrl.toUriString(), GET, request, T::class.java)
-                if (response.statusCode.isError) throw VimeoResponseException("Ошибка при зарпосе к сервису Vimeo")
+                if (response.statusCode.isError) throw VideoResponseException("Ошибка при зарпосе к сервису Vimeo")
                 return response.body
             } catch (e: Throwable) {
-                throw VimeoResponseException(e.message)
+                throw VideoResponseException(e.message)
             }
         }
 
@@ -120,9 +119,9 @@ class VimeoClient {
          * @property url the url of API
          * @property accessToken the token of authorization user in Vimeo
          * @property body the body in http method
-         * @throws VimeoResponseException
+         * @throws VideoResponseException
          * */
-        @Throws(VimeoResponseException::class)
+        @Throws(VideoResponseException::class)
         inline fun <R, reified T : Any> post(url: String, accessToken: String, body: R? = null): T? {
             val restTemplate = RestTemplate()
             val headers = HttpHeaders()
@@ -132,10 +131,10 @@ class VimeoClient {
             val request = HttpEntity<R>(body, headers)
             try {
                 val response = restTemplate.exchange(url, POST, request, T::class.java)
-                if (response.statusCode.isError) throw VimeoResponseException("Ошибка при зарпосе к сервису Vimeo")
+                if (response.statusCode.isError) throw VideoResponseException("Ошибка при зарпосе к сервису Vimeo")
                 return response.body
             } catch (e: Throwable) {
-                throw VimeoResponseException(e.message)
+                throw VideoResponseException(e.message)
             }
         }
 
@@ -147,7 +146,7 @@ class VimeoClient {
          * @property url the url of API
          * @property accessToken the token of authorization user in Vimeo
          * @property file the file to upload
-         * @throws VimeoResponseException
+         * @throws VideoResponseException
          * */
         fun postFile(url: String, accessToken: String, file: MultipartFile) {
             val restTemplate = RestTemplate()
@@ -162,9 +161,9 @@ class VimeoClient {
             try {
                 val response = restTemplate.exchange(url, POST, request, Any::class.java)
                 if (response.statusCode.isError)
-                    throw VimeoResponseException("Ошибка при зарпосе к сервису Vimeo")
+                    throw VideoResponseException("Ошибка при зарпосе к сервису Vimeo")
             } catch (e: Throwable) {
-                throw VimeoResponseException(e.message)
+                throw VideoResponseException(e.message)
             }
         }
 
@@ -178,9 +177,9 @@ class VimeoClient {
          * @property url the url of API
          * @property accessToken the token of authorization user in Vimeo
          * @property body the body in http method
-         * @throws VimeoResponseException
+         * @throws VideoResponseException
          * */
-        @Throws(VimeoResponseException::class)
+        @Throws(VideoResponseException::class)
         inline fun <R, reified T : Any> put(url: String, accessToken: String, body: R? = null): T? {
             val restTemplate = RestTemplate()
             val headers = HttpHeaders()
@@ -190,10 +189,10 @@ class VimeoClient {
             val request = HttpEntity<R>(body, headers)
             try {
                 val response = restTemplate.exchange(url, PUT, request, T::class.java)
-                if (response.statusCode.isError) throw VimeoResponseException("Ошибка при зарпосе к сервису Vimeo")
+                if (response.statusCode.isError) throw VideoResponseException("Ошибка при зарпосе к сервису Vimeo")
                 return response.body
             } catch (e: Throwable) {
-                throw VimeoResponseException(e.message)
+                throw VideoResponseException(e.message)
             }
         }
 
@@ -207,9 +206,9 @@ class VimeoClient {
          * @property url the url of API
          * @property accessToken the token of authorization user in Vimeo
          * @property body the body in http method
-         * @throws VimeoResponseException
+         * @throws VideoResponseException
          * */
-        @Throws(VimeoResponseException::class)
+        @Throws(VideoResponseException::class)
         inline fun <R, reified T : Any> patch(url: String, accessToken: String, body: R? = null): T? {
             val restTemplate = RestTemplate()
             val requestFactory = HttpComponentsClientHttpRequestFactory()
@@ -221,10 +220,10 @@ class VimeoClient {
             val request = HttpEntity<R>(body, headers)
             try {
                 val response = restTemplate.exchange(url, PATCH, request, T::class.java)
-                if (response.statusCode.isError) throw VimeoResponseException("Ошибка при зарпосе к сервису Vimeo")
+                if (response.statusCode.isError) throw VideoResponseException("Ошибка при зарпосе к сервису Vimeo")
                 return response.body
             } catch (e: Throwable) {
-                throw VimeoResponseException(e.message)
+                throw VideoResponseException(e.message)
             }
         }
 
@@ -235,9 +234,9 @@ class VimeoClient {
          *
          * @property url the url of API
          * @property accessToken the token of authorization user in Vimeo
-         * @throws VimeoResponseException
+         * @throws VideoResponseException
          * */
-        @Throws(VimeoResponseException::class)
+        @Throws(VideoResponseException::class)
         fun delete(url: String, accessToken: String) {
             val restTemplate = RestTemplate()
             val headers = HttpHeaders()
@@ -247,9 +246,9 @@ class VimeoClient {
             val request = HttpEntity<Unit>(headers)
             try {
                 val response = restTemplate.exchange(url, DELETE, request, Unit::class.java)
-                if (response.statusCode.isError) throw VimeoResponseException("Ошибка при зарпосе к сервису Vimeo")
+                if (response.statusCode.isError) throw VideoResponseException("Ошибка при зарпосе к сервису Vimeo")
             } catch (e: Throwable) {
-                throw VimeoResponseException(e.message)
+                throw VideoResponseException(e.message)
             }
         }
     }

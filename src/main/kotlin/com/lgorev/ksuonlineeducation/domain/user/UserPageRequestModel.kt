@@ -8,9 +8,10 @@ class UserPageRequestModel (
         val pageNum: Int = 0,
         val pageSize: Int = 10,
         val sortType: Direction = ASC,
-        val nameFilter: String? = null,
+        val filter: String? = null,
         var ids: MutableSet<UUID>? = null,
         val courseIdForTeacher: UUID? = null,
         val courseIdForSubscription: UUID? = null,
-        val isTeacherFilter: Boolean? = null
+        val isTeacherFilter: Boolean? = null,
+        val userRoleFilter: Role? = null
 )

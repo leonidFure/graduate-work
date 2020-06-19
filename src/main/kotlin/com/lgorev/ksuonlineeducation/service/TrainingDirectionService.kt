@@ -5,6 +5,7 @@ import com.lgorev.ksuonlineeducation.domain.common.map
 import com.lgorev.ksuonlineeducation.domain.trainingdirection.TrainingDirectionPageRequestModel
 import com.lgorev.ksuonlineeducation.domain.trainingdirection.TrainingDirectionRequestModel
 import com.lgorev.ksuonlineeducation.domain.trainingdirection.TrainingDirectionResponseModel
+import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.exception.UniqueConstraintException
 import com.lgorev.ksuonlineeducation.repository.trainingdirection.*
@@ -21,8 +22,10 @@ class TrainingDirectionService(private val trainingDirectionRepository: Training
 
     @Autowired
     private lateinit var facultyService: FacultyService
+
     @Autowired
     private lateinit var subjectService: SubjectService
+
     @Autowired
     private lateinit var subjectForEntranceService: SubjectForEntranceService
 
@@ -32,12 +35,12 @@ class TrainingDirectionService(private val trainingDirectionRepository: Training
             throw UniqueConstraintException(message = "Направление ${model.name} уже существует")
 
         if (!facultyService.existFacultyById(model.facultyId))
-            throw NotFoundException(message = "Факультет не найден")
+            throw BadRequestException(message = "Факультет не найден")
 
         val direction = trainingDirectionRepository.save(model.toEntity()).toModel()
         if (model.subjectIds.isNotEmpty()) {
             if (!subjectService.existsSubjectsByIds(model.subjectIds)) {
-                throw NotFoundException("Предмет не найден")
+                throw BadRequestException("Предмет не найден")
             } else {
                 val subjectForEntrance = model.subjectIds.map { getSubjectsForEntranceEntity(direction.id, it) }.toMutableSet()
                 subjectForEntranceService.saveAll(subjectForEntrance)
@@ -53,27 +56,53 @@ class TrainingDirectionService(private val trainingDirectionRepository: Training
                 throw UniqueConstraintException(message = "Направление ${model.name} уже существует")
         }
         trainingDirectionRepository.findByIdOrNull(model.id)?.let { dir ->
-            if (!facultyService.existFacultyById(model.facultyId)) {
+            if (!subjectService.existsSubjectsByIds(model.subjectIds)) {
+                throw BadRequestException("Предмет не найден")
+            } else {
+                subjectForEntranceService.deleteAllByDirectionId(model.id)
+                val subjectForEntrance = model.subjectIds.map { getSubjectsForEntranceEntity(model.id, it) }.toMutableSet()
+                subjectForEntranceService.saveAll(subjectForEntrance)
+            }
+            if (facultyService.existFacultyById(model.facultyId)) {
                 dir.name = model.name
                 dir.description = model.description
                 dir.facultyId = model.facultyId
+
                 return dir.toModel()
-            } else throw NotFoundException(message = "Факультет не найден")
+            } else throw BadRequestException(message = "Факультет не найден")
         }
-        throw NotFoundException(message = "Направление не найдено")
+
+
+        throw BadRequestException(message = "Направление не найдено")
     }
 
     fun getTrainingDirectionById(id: UUID): TrainingDirectionResponseModel {
         trainingDirectionRepository.findByIdOrNull(id)?.let { return it.toModel() }
-        throw NotFoundException(message = "Направление не неайдено")
+        throw BadRequestException(message = "Направление не неайдено")
     }
 
     fun getTrainingDirectionPage(model: TrainingDirectionPageRequestModel): PageResponseModel<TrainingDirectionResponseModel> {
-        return if (model.subjectIds.isNotEmpty()) {
+        val page = if (model.subjectIds.isNotEmpty()) {
             val subjectForEntranceIds = subjectForEntranceService.getSubjectForEntranceByDirectionIds(model.subjectIds)
             val ids = subjectForEntranceIds.map { it.subjectsForEntranceId.trainingDirectionId }.toMutableSet()
             trainingDirectionRepository.findPage(model, ids).map { it.toModel() }
         } else trainingDirectionRepository.findPage(model, null).map { it.toModel() }
+        val ids = page.content.map { it.id }.toMutableSet()
+        val subjectsForEntrance = subjectForEntranceService.getSubjectForEntranceByDirectionIds(ids)
+        val subjectIds = subjectsForEntrance.map { it.subjectsForEntranceId.subjectId }.toMutableSet()
+        val subjects = subjectService.getSubjectListByIds(subjectIds)
+        page.content.forEach { dir ->
+            run {
+                val currentSubjectIds = subjectsForEntrance
+                        .filter { it.subjectsForEntranceId.trainingDirectionId == dir.id }
+                        .map { it.subjectsForEntranceId.subjectId }
+                val currentSubjects = subjects
+                        .filter { subject -> subject.id in currentSubjectIds }
+                        .toMutableSet()
+                dir.subjects = currentSubjects
+            }
+        }
+        return page
     }
 
     fun deleteTrainingDirection(id: UUID) {

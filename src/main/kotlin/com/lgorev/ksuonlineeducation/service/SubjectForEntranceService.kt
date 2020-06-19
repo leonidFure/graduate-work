@@ -17,4 +17,8 @@ class SubjectForEntranceService(private val subjectForEntranceRepository: Subjec
     fun saveAll(subjectsForEntrance: MutableSet<SubjectsForEntranceEntity>) {
         subjectForEntranceRepository.saveAll(subjectsForEntrance)
     }
+
+    fun deleteAllByDirectionId(id: UUID) {
+        subjectForEntranceRepository.deleteAllByDirectionId(id)
+    }
 }

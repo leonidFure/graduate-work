@@ -34,6 +34,7 @@ data class CourseResponseModel(
         var ratingCount: Long? = 0,
         var hasSubscription: Boolean = false,
         val creatorId: UUID?,
-        val imageId: UUID?
+        val imageId: UUID?,
+        val wowzaLiveEventId: String? = null
 )
 

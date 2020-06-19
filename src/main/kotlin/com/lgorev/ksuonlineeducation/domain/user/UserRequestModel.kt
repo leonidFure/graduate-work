@@ -12,14 +12,15 @@ data class UserRequestModel(
         var id: UUID? = null,
         val firstName: String,
         val lastName: String,
-        val patronymic: String?,
+        val patronymic: String? = null,
         val email: String,
         @JsonSerialize(using = LocalDateSerializer::class)
         @JsonDeserialize(using = LocalDateDeserializer::class)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-        val startWorkDate: LocalDate?,
-        val info: String?,
-        val password: String,
-        val role: Role
+        val startWorkDate: LocalDate? = null,
+        val info: String? = null,
+        val password: String?,
+        val role: Role,
+        val facultiesIds: List<UUID>? = null
 
 )

@@ -10,5 +10,6 @@ data class FacultyResponseModel(
         val name: String,
         val description: String,
         val abbr: String,
-        val managerId: UUID
+        val managerId: UUID,
+        var user: UserResponseModel? = null
 )

@@ -27,7 +27,9 @@ data class CourseEntity(
         @Column(name = "creator_id")
         val creatorId: UUID?,
         @Column(name = "image_id")
-        var imageId: UUID?
+        var imageId: UUID?,
+        @Column(name = "live_event_id")
+        var wowzaLiveEventId: String? = null
 ) {
     companion object Fields {
         const val ID = "id"

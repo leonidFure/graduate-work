@@ -24,19 +24,14 @@ class SubjectService(private val subjectRepository: SubjectRepository) {
     @Autowired
     private lateinit var subjectForEntranceService: SubjectForEntranceService
 
+
     @Throws(UniqueConstraintException::class)
     fun addSubject(model: SubjectRequestModel): SubjectResponseModel {
-        if (subjectRepository.existsByName(model.name))
-            throw UniqueConstraintException("Предмет \"${model.name}\" уже существует")
         return subjectRepository.save(model.toEntity()).toModel()
     }
 
     @Throws(NotFoundException::class, UniqueConstraintException::class)
     fun updateSubject(model: SubjectRequestModel): SubjectResponseModel {
-        subjectRepository.findByName(model.name)?.let { subject ->
-            if (subject.id != model.id)
-                throw UniqueConstraintException("Предмет \"${model.name}\" уже существует")
-        }
         subjectRepository.findByIdOrNull(model.id)?.let { subject ->
             subject.name = model.name
             subject.description = model.description
@@ -71,6 +66,9 @@ class SubjectService(private val subjectRepository: SubjectRepository) {
 
     fun getSubjectListByIds(model: SubjectListRequestModel) = subjectRepository.findByIdIn(model.ids).map { it.toModel() }
 
+    fun getSubjectListByIds(ids: MutableSet<UUID>) = subjectRepository.findByIdIn(ids).map { it.toModel() }
+
+    fun getSubjectList() = subjectRepository.findAll().map { it.toModel() }
 
     fun setImageId(subjectId: UUID, imageId: UUID) {
         subjectRepository.findByIdOrNull(subjectId)?.let { it.imageId = imageId }

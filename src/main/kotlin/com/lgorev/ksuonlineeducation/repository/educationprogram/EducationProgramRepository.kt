@@ -9,4 +9,5 @@ interface EducationProgramRepository : CrudRepository<EducationProgramEntity, UU
     fun existsByName(name: String): Boolean
     fun findAllByNameContainingIgnoreCase(name: String): MutableSet<EducationProgramEntity>
     fun findAllByIdIn(ids: MutableSet<UUID>): MutableSet<EducationProgramEntity>
+    fun findAllBySubjectId(id: UUID): MutableSet<EducationProgramEntity>
 }

@@ -29,9 +29,9 @@ data class UserEntity(
         @Column(name = "role")
         val role: Role,
         @Column(name = "start_work_date")
-        val startWorkDate: LocalDate?,
+        var startWorkDate: LocalDate?,
         @Column(name = "info")
-        val info: String?,
+        var info: String?,
         @Column(name = "image_id")
         var imageId: UUID?
 )

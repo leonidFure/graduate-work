@@ -11,6 +11,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer
 import com.lgorev.ksuonlineeducation.domain.theme.ThemeResponseModel
+import com.lgorev.ksuonlineeducation.repository.liveevent.LiveEventEntity
 import org.springframework.format.annotation.DateTimeFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -35,5 +36,6 @@ data class LessonResponseModel(
         @JsonDeserialize(using = LocalDateTimeDeserializer::class)
         @DateTimeFormat
         val endTime: LocalDateTime? = null,
-        val videoUri: String?
+        val videoUri: String?,
+        var isLiveEventAvailable: Boolean = false
 )

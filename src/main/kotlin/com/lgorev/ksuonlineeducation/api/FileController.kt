@@ -19,11 +19,17 @@ import java.util.*
 @RequestMapping("api/files")
 class FileController(private val fileService: FileService) {
 
-    @PostMapping("users")
+    @PostMapping("users/self")
     @PreAuthorize("isAuthenticated()")
     fun addAvatar(@RequestParam image: MultipartFile, principal: Principal) {
         val userId = getUserId(principal)
         if (userId != null) fileService.addUserImage(userId, image)
+    }
+
+    @PostMapping("users/{id}")
+    @PreAuthorize("isAuthenticated()")
+    fun addAvatar(@RequestParam image: MultipartFile, @PathVariable id: UUID) {
+        fileService.addUserImage(id, image)
     }
 
     @GetMapping("users")
@@ -72,9 +78,9 @@ class FileController(private val fileService: FileService) {
         return getFile(multipartFile)
     }
 
-    @GetMapping("lessons/page")
+    @PostMapping("lessons/page")
     @PreAuthorize("isAuthenticated()")
-    fun getPage(model: FileRequestPageModel) = ok(fileService.getPage(model))
+    fun getPage(@RequestBody model: FileRequestPageModel) = ok(fileService.getPage(model))
 
     @DeleteMapping("lessons")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")

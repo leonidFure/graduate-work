@@ -22,14 +22,16 @@ class UserPagingRepositoryImpl(@PersistenceContext private val em: EntityManager
 
         if (model.ids != null)
             predicates.add(root.get(id).`in`(model.ids))
-        if (model.nameFilter != null) {
+        if (model.filter != null) {
             val concatWithPatronymic = cb.upper(cb.concat(root.get(lastName), cb.concat(" ", cb.concat(root.get(firstName), cb.concat(" ", root.get(patronymic))))))
             val concatWithoutPatronymic = cb.upper(cb.concat(root.get(lastName), cb.concat(" ", root.get(firstName))))
             val expression = cb.selectCase<String>()
                     .`when`(cb.isNotNull(root.get(patronymic)), concatWithPatronymic)
                     .otherwise(concatWithoutPatronymic)
 
-            predicates.add(cb.like(expression, "%${model.nameFilter}%".toUpperCase()))
+            val nameLikeExpresion = cb.like(expression, "%${model.filter}%".toUpperCase())
+            val emailLikeExpresion = cb.like(cb.upper(root[email]), "%${model.filter}%".toUpperCase())
+            predicates.add(cb.or(nameLikeExpresion, emailLikeExpresion))
         }
         if (model.isTeacherFilter != null) {
             if (model.isTeacherFilter) {
@@ -39,11 +41,14 @@ class UserPagingRepositoryImpl(@PersistenceContext private val em: EntityManager
             }
         }
 
+        if (model.userRoleFilter != null)
+            predicates.add(cb.equal(root[role], model.userRoleFilter))
+
         cq.where(cb.and(*predicates.toTypedArray()))
         if (model.sortType == Sort.Direction.DESC)
-            cq.orderBy(cb.desc(root.get(lastName)))
+            cq.orderBy(cb.desc(root.get(registrationDate)))
         else
-            cq.orderBy(cb.asc(root.get(lastName)))
+            cq.orderBy(cb.asc(root.get(registrationDate)))
 
         val typedQuery = em.createQuery(cq)
         countQuery.select(cb.count(countQuery.from(user)))

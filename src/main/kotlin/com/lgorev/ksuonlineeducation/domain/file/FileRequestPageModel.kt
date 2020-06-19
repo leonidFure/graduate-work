@@ -1,7 +1,5 @@
 package com.lgorev.ksuonlineeducation.domain.file
 
-import javafx.scene.control.TableColumn
-import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Sort.*
 import org.springframework.data.domain.Sort.Direction.*
 import java.util.*

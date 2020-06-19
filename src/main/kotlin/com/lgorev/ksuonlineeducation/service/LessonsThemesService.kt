@@ -10,4 +10,5 @@ import java.util.*
 class LessonsThemesService (private val lessonsThemesRepository: LessonsThemesRepository) {
     fun getLessonsThemesByLessonIds(ids: MutableSet<UUID>) = lessonsThemesRepository.findByLessonIds(ids)
     fun getLessonsThemesByThemeIds(ids: MutableSet<UUID>) = lessonsThemesRepository.findByThemeIds(ids)
+    fun getLessonsThemesByLessonId(id: UUID) = lessonsThemesRepository.findAllByLessonsThemesIdLessonId(id)
 }

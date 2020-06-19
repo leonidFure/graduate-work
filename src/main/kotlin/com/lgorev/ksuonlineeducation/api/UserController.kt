@@ -7,9 +7,6 @@ import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.service.UserService
 import com.lgorev.ksuonlineeducation.util.getRole
 import com.lgorev.ksuonlineeducation.util.getUserId
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort.Direction
-import org.springframework.data.domain.Sort.Direction.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.*
@@ -36,11 +33,6 @@ class UserController(private val userService: UserService) {
             throw NotFoundException("Пользователь не найден")
     }
 
-    @GetMapping("page", params = ["page", "size", "sort"])
-    @PreAuthorize("isAuthenticated()")
-    fun getUserPage(@RequestParam page: Int = 0, @RequestParam size: Int = 10, @RequestParam sort: Direction = ASC) =
-            ok(userService.loadPage(PageRequest.of(page, size, sort, "id")))
-
     @PutMapping
     @PreAuthorize("isAuthenticated()")
     fun updateUser(@RequestBody model: UserRequestModel, principal: Principal): UserResponseModel {
@@ -48,9 +40,13 @@ class UserController(private val userService: UserService) {
         if (getRole(principal) != Role.ADMIN && model.id != null && userId != model.id)
             throw AuthException("Вы не можете поменять данные другого пользователя")
 
-        if (model.id != null) model.id = userId
+        if (model.id == null) model.id = userId
         return userService.updateUser(model)
     }
+
+    @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    fun saveUser(@RequestBody model: UserRequestModel) = userService.saveUser(model)
 
     @PatchMapping("lock")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -77,4 +73,19 @@ class UserController(private val userService: UserService) {
     @PreAuthorize("isAuthenticated()")
     fun getPage(@RequestBody model: UserPageRequestModel) = userService.getPage(model)
 
+    @GetMapping("list")
+    @PreAuthorize("isAuthenticated()")
+    fun getAllUsers() = ok(userService.getAllUsers())
+
+    @GetMapping("list/{course_id}/teachers")
+    @PreAuthorize("isAuthenticated()")
+    fun getAllCourseTeachers(@PathVariable("course_id") id: UUID) = ok(userService.getCourseTeachers(id))
+
+    @GetMapping("list/{course_id}/not/teachers")
+    @PreAuthorize("isAuthenticated()")
+    fun getNotCourseTeachers(@PathVariable("course_id") id: UUID) = ok(userService.getNotCourseTeachers(id))
+
+    @GetMapping("list/{course_id}/subs")
+    @PreAuthorize("isAuthenticated()")
+    fun getAllCourseSubs(@PathVariable("course_id") id: UUID) = ok(userService.getCourseSubs(id))
 }

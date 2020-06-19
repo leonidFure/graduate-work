@@ -43,9 +43,4 @@ class AuthController(private val authService: AuthService) {
         authService.logout(tcc.sessionId)
     }
 
-    @PermitAll
-    @PostMapping("login/google")
-    fun loginWithGoogle(@RequestBody modelUser: UserLoginModel) {
-
-    }
 }

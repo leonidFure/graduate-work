@@ -37,6 +37,9 @@ class FileService(private val fileRepository: FileRepository) {
     @Autowired
     private lateinit var lessonsFilesService: LessonsFilesService
 
+    @Autowired
+    private lateinit var educationProgramsService: EducationProgramService
+
     @Value("\${file.max-count}")
     private lateinit var maxCount: String
 
@@ -69,11 +72,11 @@ class FileService(private val fileRepository: FileRepository) {
     fun getCourseImage(courseId: UUID): MockMultipartFile {
         val course = courseService.getCourseById(courseId, null)
         if (course.imageId == null)
-            throw NotFoundException("У курса нет изображения")
+            return getSubjectImageForCourse(course.educationProgramId)
         fileRepository.findByIdOrNull(course.imageId)?.let { file ->
             return fileStoreService.getFile(courseId, file.toModel())
         }
-        throw NotFoundException("У курса нет изображения")
+        return getSubjectImageForCourse(course.educationProgramId)
     }
 
     @Throws(BadRequestException::class)
@@ -139,6 +142,11 @@ class FileService(private val fileRepository: FileRepository) {
             lessonsFilesService.deleteLessonsFiles(lessonId, fileId)
             fileRepository.deleteById(fileId)
         }
+    }
+
+    private fun getSubjectImageForCourse(educationProgramId: UUID): MockMultipartFile {
+        val educationProgram = educationProgramsService.getEducationProgramById(educationProgramId)
+        return getSubjectImage(educationProgram.subjectId)
     }
 }
 

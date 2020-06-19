@@ -1,14 +1,17 @@
 package com.lgorev.ksuonlineeducation.service
 
 import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
+import com.lgorev.ksuonlineeducation.domain.common.forEach
 import com.lgorev.ksuonlineeducation.domain.common.map
 import com.lgorev.ksuonlineeducation.domain.user.*
 import com.lgorev.ksuonlineeducation.exception.AuthException
+import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
+import com.lgorev.ksuonlineeducation.repository.faculty.TeachersFacultiesEntity
+import com.lgorev.ksuonlineeducation.repository.faculty.TeachersFacultiesId
 import com.lgorev.ksuonlineeducation.repository.user.UserRepository
 import com.lgorev.ksuonlineeducation.repository.user.UserEntity
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCrypt
@@ -21,10 +24,16 @@ import java.util.*
 class UserService(private val userRepository: UserRepository) : UserDetailsService {
 
     @Autowired
-    lateinit var coursesTeacherService: CoursesTeachersService
+    private lateinit var coursesTeacherService: CoursesTeachersService
 
     @Autowired
-    lateinit var coursesSubscriptionService: CourseSubscriptionService
+    private lateinit var coursesSubscriptionService: CourseSubscriptionService
+
+    @Autowired
+    private lateinit var teachersFacultiesService: TeachersFacultiesService
+
+    @Autowired
+    private lateinit var facultiesService: FacultyService
 
     override fun loadUserByUsername(email: String?) = userRepository.findByEmail(email ?: "")?.toUserModel()
 
@@ -34,7 +43,7 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
         throw NotFoundException("Пользователь не найден")
     }
 
-    fun loadPage(pageable: Pageable) = userRepository.findAll(pageable).map { it.toModel() }
+    fun getUsersByIds(ids: MutableSet<UUID>) = userRepository.findAllById(ids).map { it.toModel() }
 
     @Throws(NotFoundException::class)
     fun updateUser(model: UserRequestModel): UserResponseModel {
@@ -42,9 +51,23 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
             user.firstName = model.firstName
             user.lastName = model.lastName
             user.patronymic = model.patronymic
+            user.startWorkDate = model.startWorkDate
+            user.info = model.info
             return user.toModel()
         }
         throw NotFoundException("Пользователь не найден")
+    }
+
+    @Throws(BadRequestException::class)
+    fun saveUser(model: UserRequestModel): UserResponseModel {
+        if(userRepository.existsByEmail(model.email))
+            throw BadRequestException("Пользователь с логином \"${model.email}\" уже существует")
+        val response = userRepository.save(model.toUserEntity()).toModel()
+        if(model.facultiesIds != null) {
+            val list = model.facultiesIds.map { TeachersFacultiesEntity(TeachersFacultiesId(response.id, it)) }
+            teachersFacultiesService.saveAll(list)
+        }
+        return response
     }
 
     @Throws(NotFoundException::class)
@@ -64,8 +87,29 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
 
     fun existUserById(id: UUID) = userRepository.existsById(id)
 
+    fun getAllUsers() = userRepository.findAllByRole(Role.TEACHER).map { it.toModel() }
+
+    fun getCourseTeachers(courseId: UUID): List<UserResponseModel> {
+        val coursesTeachers = coursesTeacherService.getCoursesTeachersByCourseId(courseId)
+        val list = coursesTeachers.map { it.teacherId }
+        return userRepository.findAllById(list).map { it.toModel() }
+    }
+
+    fun getNotCourseTeachers(courseId: UUID): List<UserResponseModel> {
+        val coursesTeachers = coursesTeacherService.getCoursesTeachersByCourseId(courseId)
+        val list = coursesTeachers.map { it.teacherId }
+        return if(list.isEmpty()) userRepository.findAllByRole(Role.TEACHER).map { it.toModel() }
+        else userRepository.findAllByRoleAndIdNotIn(Role.TEACHER, list).map { it.toModel() }
+    }
+
+    fun getCourseSubs(courseId: UUID): List<UserResponseModel> {
+        val coursesTeachers = coursesSubscriptionService.getByCourseId(courseId)
+        val list = coursesTeachers.map { it.id.userId }
+        return userRepository.findAllById(list).map { it.toModel() }
+    }
+
     fun getPage(model: UserPageRequestModel): PageResponseModel<UserResponseModel> {
-        return when {
+        val page = when {
             model.courseIdForTeacher != null -> {
                 val coursesTeachers = coursesTeacherService.getCoursesTeachersByCourseId(model.courseIdForTeacher)
                 val teachersIds = coursesTeachers.map { it.teacherId }
@@ -82,6 +126,24 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
                 userRepository.getPage(model).map { user -> user.toModel() }
             }
         }
+        val ids = page.content.map { it.id }.toMutableSet()
+
+        val teachersFaculties = teachersFacultiesService.getTeachersFacultiesByTeacherIds(ids)
+        val facultiesIds = teachersFaculties.map { it.facultyId }.toMutableSet()
+        val faculties = facultiesService.getFacultyListByIds(facultiesIds)
+
+        page.forEach { user ->
+            run {
+                val currentFacultiesIds = teachersFaculties
+                        .filter { it.teacherId == user.id }
+                        .map { it.facultyId }
+                val currentFaculties = faculties
+                        .filter { it.id in currentFacultiesIds }
+                        .toMutableSet()
+                user.faculties = currentFaculties
+            }
+        }
+        return page
     }
 
     fun existsTeacherById(id: UUID) = userRepository.existsByIdAndRole(id, Role.TEACHER)
@@ -93,6 +155,8 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
 }
 
 
-fun UserEntity.toModel() = UserResponseModel(id, firstName, lastName, patronymic, email, role, "/api/files/avatar/open?id=${id}", startWorkDate, info, imageId)
+fun UserEntity.toModel() = UserResponseModel(id, firstName, lastName, patronymic, email, role, "/api/files/users?id=${id}", startWorkDate, info, imageId, registrationDate = registrationDate)
+
+
 
 private fun UserEntity.toUserModel() = UserModel(id, firstName, lastName, patronymic, email, password, role)

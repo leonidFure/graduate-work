@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.domain.faculty.TeachersFacultiesListModel
 import com.lgorev.ksuonlineeducation.domain.faculty.TeachersFacultiesModel
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
@@ -40,8 +41,20 @@ class TeachersFacultiesService(private val teachersFacultiesRepository: Teachers
             teachersFacultiesRepository.delete(entity)
     }
 
+    fun saveAll(entities: List<TeachersFacultiesEntity>) = teachersFacultiesRepository.saveAll(entities)
+
+    fun editTeacherFromFaculty(model: TeachersFacultiesListModel, id: UUID) {
+        teachersFacultiesRepository.deleteAllByTeacherId(id)
+        val list = model.list.map { TeachersFacultiesEntity(TeachersFacultiesId(it.teacherId, it.facultyId)) }
+        teachersFacultiesRepository.saveAll(list)
+    }
+
     fun getTeachersFacultiesByTeacherId(id: UUID) =
             teachersFacultiesRepository.findByTeacherId(id).map { it.toModel() }.toMutableSet()
+    fun getTeachersFacultiesByTeacherIds(ids: MutableSet<UUID>) =
+            teachersFacultiesRepository.findByTeacherIds(ids).map { it.toModel() }.toMutableSet()
+    fun getTeachersFacultiesByFacultyIds(ids: MutableSet<UUID>) =
+            teachersFacultiesRepository.findByFacultyIds(ids).map { it.toModel() }.toMutableSet()
 }
 
 private fun TeachersFacultiesEntity.toModel() =

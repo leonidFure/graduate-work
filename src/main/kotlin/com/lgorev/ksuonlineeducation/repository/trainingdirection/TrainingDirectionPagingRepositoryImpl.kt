@@ -40,7 +40,7 @@ class TrainingDirectionPagingRepositoryImpl(@PersistenceContext private val em: 
         countQuery.select(cb.count(countQuery.from(trainingDirection)))
         countQuery.where(cb.and(*predicates.toTypedArray()))
         val typedQuery = em.createQuery(cq)
-        typedQuery.firstResult = (model.pageNum) * model.pageSize
+        typedQuery.firstResult = (model.pageNum - 1) * model.pageSize
         typedQuery.maxResults = model.pageSize
 
         val query = em.createQuery(countQuery)

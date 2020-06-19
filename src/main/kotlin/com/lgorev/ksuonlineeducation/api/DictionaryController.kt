@@ -5,6 +5,8 @@ import com.lgorev.ksuonlineeducation.domain.educationprogram.EducationProgramSta
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonStatus
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectType
 import com.lgorev.ksuonlineeducation.domain.timetable.TimetableType
+import com.lgorev.ksuonlineeducation.domain.user.Role
+import com.lgorev.ksuonlineeducation.domain.user.UserModel
 import com.lgorev.ksuonlineeducation.service.DictionaryService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -28,5 +30,8 @@ class DictionaryController (private val dictionaryService: DictionaryService) {
 
     @GetMapping("timetable")
     fun getTimetableDictionary() = dictionaryService.getDictionary(TimetableType.values())
+
+    @GetMapping("user")
+    fun getUserDictionary() = dictionaryService.getDictionary(Role.values())
 
 }

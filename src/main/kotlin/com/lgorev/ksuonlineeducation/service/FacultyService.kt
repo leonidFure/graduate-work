@@ -1,9 +1,9 @@
 package com.lgorev.ksuonlineeducation.service
 
-import com.lgorev.ksuonlineeducation.domain.faculty.FacultyPageRequestModel
-import com.lgorev.ksuonlineeducation.domain.faculty.FacultyResponseModel
-import com.lgorev.ksuonlineeducation.domain.faculty.FacultyRequestModel
-import com.lgorev.ksuonlineeducation.domain.faculty.TeachersFacultiesModel
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
+import com.lgorev.ksuonlineeducation.domain.common.map
+import com.lgorev.ksuonlineeducation.domain.faculty.*
+import com.lgorev.ksuonlineeducation.domain.user.UserResponseModel
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.exception.UniqueConstraintException
 import com.lgorev.ksuonlineeducation.repository.faculty.*
@@ -29,7 +29,7 @@ class FacultyService(private val facultyRepository: FacultyRepository) {
     fun addFaculty(model: FacultyRequestModel): FacultyResponseModel {
         if (facultyRepository.existsByName(model.name))
             throw UniqueConstraintException(message = "Факультет ${model.name} уже существует")
-        if(!userService.existsTeacherById(model.managerId))
+        if (!userService.existsTeacherById(model.managerId))
             throw NotFoundException("Преподаватель не найден")
 
         if (facultyRepository.existsByManagerId(model.managerId))
@@ -48,7 +48,7 @@ class FacultyService(private val facultyRepository: FacultyRepository) {
                 throw UniqueConstraintException(message = "Факультет ${model.name} уже существует")
         }
 
-        if(!userService.existsTeacherById(model.managerId))
+        if (!userService.existsTeacherById(model.managerId))
             throw NotFoundException("Преподаватель не найден")
 
         facultyRepository.findByManagerId(model.managerId)?.let { faculty ->
@@ -67,7 +67,7 @@ class FacultyService(private val facultyRepository: FacultyRepository) {
     }
 
     @Throws(NotFoundException::class)
-    fun getFacultyById(id: UUID): FacultyResponseModel {
+    fun     getFacultyById(id: UUID): FacultyResponseModel {
         facultyRepository.findByIdOrNull(id)?.let { return it.toModel() }
         throw NotFoundException("Факультет не найден")
     }
@@ -80,15 +80,14 @@ class FacultyService(private val facultyRepository: FacultyRepository) {
         throw NotFoundException("Факультет не найден")
     }
 
-    fun getFacultyPage(model: FacultyPageRequestModel): Page<FacultyResponseModel> {
-        val pageable = PageRequest.of(model.pageNum, model.pageSize, model.sortType, "name")
-        return if (model.nameFilter != null)
-            facultyRepository
-                    .findAllByNameContainingIgnoreCase(pageable, model.nameFilter)
-                    .map { it.toModel() }
-        else
-            facultyRepository.findAll(pageable).map { it.toModel() }
+    fun getFacultyPage(model: FacultyPageRequestModel): PageResponseModel<FacultyResponseModel> {
+        val faculties = facultyRepository.findPage(model)
+        val managerIds = faculties.content.map { it.managerId }.toMutableSet()
+        val users = userService.getUsersByIds(managerIds).map { it.id to it }.toMap()
+        return faculties.map { it.toModel(users[it.managerId]) }
     }
+
+    fun getFacultyListByIds(ids: MutableSet<UUID>) = facultyRepository.findAllById(ids).map { it.toModel() }
 
     fun deleteFaculty(id: UUID) {
         if (facultyRepository.existsById(id))
@@ -100,10 +99,16 @@ class FacultyService(private val facultyRepository: FacultyRepository) {
         return facultyRepository.findAllById(teachersFaculties.map { it.facultyId }).map { it.toModel() }.toMutableSet()
     }
 
+    fun getFacultiesByIds(model: FacultyListRequestModel) = facultyRepository.findAllByIdIn(model.ids).map { it.toModel() }
+    fun getFacultiesByIds() = facultyRepository.findAll().map { it.toModel() }
+
 }
 
 private fun FacultyEntity.toModel() =
-        FacultyResponseModel(id, name, description, abbr,  managerId)
+        FacultyResponseModel(id, name, description, abbr, managerId)
+
+private fun FacultyEntity.toModel(manager: UserResponseModel?) =
+        FacultyResponseModel(id, name, description, abbr, managerId, manager)
 
 private fun FacultyRequestModel.toEntity() =
         FacultyEntity(id, name, description, abbr, managerId)

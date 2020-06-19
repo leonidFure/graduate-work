@@ -25,6 +25,10 @@ class SubjectController(private val subjectService: SubjectService) {
     @PreAuthorize("isAuthenticated()")
     fun getList(@RequestBody model: SubjectListRequestModel) = ok(subjectService.getSubjectListByIds(model))
 
+    @GetMapping("list")
+    @PreAuthorize("isAuthenticated()")
+    fun getList() = ok(subjectService.getSubjectList())
+
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
     fun add(@RequestBody model: SubjectRequestModel) = ok(subjectService.addSubject(model))

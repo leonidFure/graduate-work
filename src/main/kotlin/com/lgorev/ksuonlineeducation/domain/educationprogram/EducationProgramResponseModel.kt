@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
+import com.lgorev.ksuonlineeducation.domain.subject.SubjectResponseModel
 import java.time.LocalDate
 import java.util.*
 
@@ -18,5 +19,6 @@ data class EducationProgramResponseModel(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         val creationDate: LocalDate = LocalDate.now(),
         val status: EducationProgramStatus,
-        val isActual: Boolean = true
+        val isActual: Boolean = true,
+        var subject: SubjectResponseModel? = null
 )

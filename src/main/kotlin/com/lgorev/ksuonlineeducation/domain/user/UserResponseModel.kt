@@ -1,6 +1,7 @@
 package com.lgorev.ksuonlineeducation.domain.user
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.lgorev.ksuonlineeducation.domain.faculty.FacultyResponseModel
 import java.time.LocalDate
 import java.util.*
 
@@ -15,5 +16,7 @@ data class UserResponseModel(
         val photoUrl: String,
         val startWorkDate: LocalDate?,
         val info: String?,
-        val imageId: UUID?
+        val imageId: UUID?,
+        var faculties: MutableSet<FacultyResponseModel>? = null,
+        val registrationDate: LocalDate
 )

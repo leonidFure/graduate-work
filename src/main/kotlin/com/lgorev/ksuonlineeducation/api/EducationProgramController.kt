@@ -37,4 +37,8 @@ class EducationProgramController(private val educationProgramService: EducationP
     fun delete(@RequestParam id: UUID) =
             ok(educationProgramService.deleteEducationProgram(id))
 
+    @GetMapping("list")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    fun getList() = educationProgramService.getList()
+
 }
