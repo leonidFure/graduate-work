@@ -11,12 +11,14 @@ import com.lgorev.ksuonlineeducation.repository.faculty.TeachersFacultiesEntity
 import com.lgorev.ksuonlineeducation.repository.faculty.TeachersFacultiesId
 import com.lgorev.ksuonlineeducation.repository.user.UserRepository
 import com.lgorev.ksuonlineeducation.repository.user.UserEntity
+import com.lgorev.ksuonlineeducation.util.getRole
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCrypt
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.security.Principal
 import java.util.*
 
 @Service
@@ -108,22 +110,23 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
         return userRepository.findAllById(list).map { it.toModel() }
     }
 
-    fun getPage(model: UserPageRequestModel): PageResponseModel<UserResponseModel> {
+    fun getPage(model: UserPageRequestModel, principal: Principal): PageResponseModel<UserResponseModel> {
+
         val page = when {
             model.courseIdForTeacher != null -> {
                 val coursesTeachers = coursesTeacherService.getCoursesTeachersByCourseId(model.courseIdForTeacher)
                 val teachersIds = coursesTeachers.map { it.teacherId }
                 model.ids = teachersIds.toMutableSet()
-                userRepository.getPage(model).map { user -> user.toModel() }
+                userRepository.getPage(model, principal).map { user -> user.toModel() }
             }
             model.courseIdForSubscription != null -> {
                 val coursesSubscription = coursesSubscriptionService.getByCourseId(model.courseIdForSubscription)
                 val teachersIds = coursesSubscription.map { it.id.courseId }
                 model.ids = teachersIds.toMutableSet()
-                userRepository.getPage(model).map { user -> user.toModel() }
+                userRepository.getPage(model, principal).map { user -> user.toModel() }
             }
             else -> {
-                userRepository.getPage(model).map { user -> user.toModel() }
+                userRepository.getPage(model, principal).map { user -> user.toModel() }
             }
         }
         val ids = page.content.map { it.id }.toMutableSet()

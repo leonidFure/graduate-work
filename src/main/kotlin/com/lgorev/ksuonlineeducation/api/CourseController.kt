@@ -78,4 +78,13 @@ class CourseController(private val courseService: CourseService,
     @GetMapping("teacher")
     @PreAuthorize("isAuthenticated()")
     fun getCourseIdListForByTeacherId(@RequestParam id: UUID) = courseService.getCourseIdListForByTeacherId(id)
+
+    @GetMapping("teacher/list")
+    @PreAuthorize("hasAuthority('TEACHER') or hasAuthority('ADMIN')")
+    fun getCourseListByTeacherId(@RequestParam id: UUID) = courseService.getCourseListByTeacherId(id)
+
+    @GetMapping("subscriber/list")
+    @PreAuthorize("isAuthenticated()")
+    fun getCourseListBySubscriberId(@RequestParam id: UUID) = courseService.getCourseListBySubscriberId(id)
+
 }

@@ -71,7 +71,7 @@ class UserController(private val userService: UserService) {
 
     @PostMapping("page")
     @PreAuthorize("isAuthenticated()")
-    fun getPage(@RequestBody model: UserPageRequestModel) = userService.getPage(model)
+    fun getPage(@RequestBody model: UserPageRequestModel, principal: Principal) = userService.getPage(model, principal)
 
     @GetMapping("list")
     @PreAuthorize("isAuthenticated()")

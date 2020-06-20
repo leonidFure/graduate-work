@@ -2,6 +2,7 @@ package com.lgorev.ksuonlineeducation.repository.course
 
 import com.lgorev.ksuonlineeducation.domain.course.CourseStatus
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
 
@@ -20,8 +21,8 @@ data class CourseEntity(
         var startDate: LocalDate,
         @Column(name = "end_date")
         var endDate: LocalDate,
-        @Column(name = "creation_date")
-        var creationDate: LocalDate = LocalDate.now(),
+        @Column(name = "creation_datetime")
+        var creationDateTime: LocalDateTime = LocalDateTime.now(),
         @Column(name = "is_actual")
         var isActual: Boolean = true,
         @Column(name = "creator_id")

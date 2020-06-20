@@ -55,6 +55,8 @@ class CourseSubscriptionService(private val courseSubscriptionRepository: Course
     }
 
     fun getByCourseId(courseId: UUID) = courseSubscriptionRepository.findByCourseId(courseId)
+    fun getByCourseId(courseIds: MutableSet<UUID>) = courseSubscriptionRepository.findByCourseIds(courseIds)
+    fun getByUserId(userId: UUID) = courseSubscriptionRepository.findListByUserId(userId)
 }
 
 private fun CourseSubscriptionModel.toEntity() = CourseSubscriptionEntity(CourseSubscriptionId(courseId, userId))

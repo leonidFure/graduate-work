@@ -2,6 +2,7 @@ package com.lgorev.ksuonlineeducation.service
 
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.infrostructure.wowza.WowzaClient
+import com.lgorev.ksuonlineeducation.infrostructure.wowza.models.LiveEventStateResponse
 import com.lgorev.ksuonlineeducation.repository.liveevent.LiveEventEntity
 import com.lgorev.ksuonlineeducation.repository.liveevent.LiveEventRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,8 +37,28 @@ class LiveEventService(private val liveEventRepository: LiveEventRepository, pri
         }
     }
 
-    fun startLiveEvent(id: String) = wowzaClient.startLiveEvent(id)
-    fun stopLiveEvent(id: String) = wowzaClient.stopLiveEvent(id)
+    fun startLiveEvent(id: String): LiveEventStateResponse? {
+        val state = getState(id)
+        if (state?.live_stream?.state != null) {
+            if (state.live_stream.state == "stopped") {
+                return wowzaClient.startLiveEvent(id)
+            }
+        }
+        throw BadRequestException("Ошибка сервиса трансляций")
+    }
+
+    fun stopLiveEvent(id: String): LiveEventStateResponse? {
+        val state = getState(id)
+        if (state?.live_stream?.state != null) {
+            if (state.live_stream.state == "started") {
+                return wowzaClient.stopLiveEvent(id)
+            }
+        }
+        throw BadRequestException("Ошибка сервиса трансляций")
+
+    }
+
+    fun getState(id: String) = wowzaClient.getState(id)
     fun deleteLiveEvent(id: String) {}
 
     fun getLiveEvent(id: String): LiveEventEntity {

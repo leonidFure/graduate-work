@@ -108,9 +108,6 @@ class FileService(private val fileRepository: FileRepository) {
 
     @Throws(BadRequestException::class)
     fun addLessonFile(lessonId: UUID, file: MultipartFile) {
-        val count = fileRepository.count()
-        val validCount = maxCount.toLong()
-        if(count >= validCount) throw BadRequestException("Максимальное количество файлов")
         val fileEntity = fileStoreService.saveFile(file, lessonId, LESSON_FILE)
         fileRepository.save(fileEntity)
         lessonsFilesService.addFileToLesson(lessonId, fileEntity.id)

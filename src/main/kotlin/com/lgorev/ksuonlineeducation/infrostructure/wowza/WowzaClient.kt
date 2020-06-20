@@ -56,6 +56,11 @@ class WowzaClient {
         //"${WSC_HOST}/api/${WSC_VERSION}/live_streams/[live_stream_id]"
     }
 
+    fun getState(id: String): LiveEventStateResponse? {
+        val url = "${wowzaUrl}/live_streams/${id}/state"
+        return get(url, apiKey, accessKey)
+    }
+
     private companion object {
 
 

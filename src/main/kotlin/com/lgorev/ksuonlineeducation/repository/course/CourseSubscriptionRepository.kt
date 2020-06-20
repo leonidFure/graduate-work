@@ -16,5 +16,9 @@ interface CourseSubscriptionRepository : CrudRepository<CourseSubscriptionEntity
 
     @Query("SELECT e FROM CourseSubscriptionEntity e WHERE e.id.courseId = :courseId ")
     fun findByCourseId(@Param("courseId") courseId: UUID): MutableSet<CourseSubscriptionEntity>
+
+    @Query("SELECT e FROM CourseSubscriptionEntity e WHERE e.id.courseId in :courseIds")
+    fun findByCourseIds(@Param("courseIds") courseIds: MutableSet<UUID>): MutableSet<CourseSubscriptionEntity>
+
 }
 

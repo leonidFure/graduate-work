@@ -5,6 +5,7 @@ import com.lgorev.ksuonlineeducation.domain.common.map
 import com.lgorev.ksuonlineeducation.domain.course.CourseRequestModel
 import com.lgorev.ksuonlineeducation.domain.course.CourseRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.course.CourseResponseModel
+import com.lgorev.ksuonlineeducation.domain.course.CoursesTeachersModel
 import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.infrostructure.wowza.WowzaClient
@@ -52,6 +53,7 @@ class CourseService(private val courseRepository: CourseRepository) {
             model.ratingCount = courseRating?.count
             model.educationProgram = educationProgram
             model.hasSubscription = subscriptions != null
+            model.subCount = courseSubscriptionService.getByCourseId(courseEntity.id).count()
             return model
         }
         throw NotFoundException("Курс не найден")
@@ -86,7 +88,8 @@ class CourseService(private val courseRepository: CourseRepository) {
         val educationPrograms = educationProgramService.getEducationProgramsByIds(ids)
         val ratings = courseReviewService.getCoursesRating(courseIds)
         val result = courses.map { it.toModel() }
-
+        val byCourseId = courseSubscriptionService.getByCourseId(courseIds)
+        val map = byCourseId.map { r -> r.id.courseId to byCourseId.filter { b -> b.id.courseId == r.id.courseId }.count() }.toMap()
         result.content.forEach { c ->
             c.educationProgram = educationPrograms
                     .find { ed -> ed.id == c.educationProgramId }
@@ -97,6 +100,7 @@ class CourseService(private val courseRepository: CourseRepository) {
                 val courseSubscription = CourseSubscriptionEntity(CourseSubscriptionId(c.id, userId))
                 if (subscriptions != null) c.hasSubscription = subscriptions.contains(courseSubscription)
             }
+            c.subCount = map[c.id]
         }
         return result
     }
@@ -104,13 +108,17 @@ class CourseService(private val courseRepository: CourseRepository) {
     fun existCourseById(id: UUID) = courseRepository.existsById(id)
 
     @Throws(NotFoundException::class, BadRequestException::class)
-    fun addCourse(model: CourseRequestModel, principal: Principal) {
+    fun addCourse(model: CourseRequestModel, principal: Principal): CourseResponseModel {
         if (model.endDate.isBefore(model.startDate))
             throw BadRequestException("Период обучени задан некоретно")
         val educationProgram = educationProgramService.getEducationProgramById(model.educationProgramId)
         val userId = getUserId(principal)
         val course = courseRepository.save(model.toEntity(userId)).toModel()
-//        liveEventService.createLiveEvent(educationProgram.name, course.id)
+        liveEventService.createLiveEvent(educationProgram.name, course.id)
+        if(userId != null)
+            coursesTeachersService.addTeacherToCourse(CoursesTeachersModel(course.id, userId))
+        return course
+
     }
 
     @Throws(NotFoundException::class, BadRequestException::class)
@@ -152,12 +160,27 @@ class CourseService(private val courseRepository: CourseRepository) {
 
     fun changeLiveEventId(courseId: UUID, id: String) {
         courseRepository.findByIdOrNull(courseId)?.let { it.wowzaLiveEventId = id }
+    }
 
+    fun getCourseListByTeacherId(id: UUID): List<CourseResponseModel> {
+        val coursesTeachersByTeacherId = coursesTeachersService.getCoursesTeachersByTeacherId(id)
+        val map = coursesTeachersByTeacherId.map { it.courseId }
+        return courseRepository.findAllById(map).map { it.toModel() }
+    }
+
+    fun getCourseListBySubscriberId(id: UUID): List<CourseResponseModel> {
+        val coursesTeachersByTeacherId = courseSubscriptionService.getByUserId(id)
+        val map = coursesTeachersByTeacherId.map { it.id.courseId }
+        val courses = courseRepository.findAllById(map).map { it.toModel() }
+        val ids = courses.map { it.educationProgramId }.toMutableSet()
+        val educationPrograms = educationProgramService.getEducationProgramsByIds(ids)
+        courses.forEach { c -> c.educationProgram = educationPrograms.find { ed -> ed.id == c.educationProgramId } }
+        return courses
     }
 }
 
 private fun CourseRequestModel.toEntity(creatorId: UUID?) =
-        CourseEntity(id, educationProgramId, status, startDate, endDate, creationDate, isActual, creatorId, null)
+        CourseEntity(id, educationProgramId, status, startDate, endDate, creationDateTime, isActual, creatorId, null)
 
 private fun CourseEntity.toModel() =
         CourseResponseModel(
@@ -167,11 +190,12 @@ private fun CourseEntity.toModel() =
                 status,
                 startDate,
                 endDate,
-                creationDate,
+                creationDateTime,
                 isActual,
                 "/api/files/courses?id=${id}",
                 creatorId = creatorId,
-                imageId = imageId
+                imageId = imageId,
+                wowzaLiveEventId = wowzaLiveEventId
         )
 
 

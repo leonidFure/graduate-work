@@ -4,7 +4,9 @@ import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
 import com.lgorev.ksuonlineeducation.domain.user.Role
 import com.lgorev.ksuonlineeducation.domain.user.UserPageRequestModel
 import com.lgorev.ksuonlineeducation.repository.user.UserEntity_.*
+import com.lgorev.ksuonlineeducation.util.getRole
 import org.springframework.data.domain.Sort
+import java.security.Principal
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 import javax.persistence.criteria.Predicate
@@ -13,7 +15,7 @@ class UserPagingRepositoryImpl(@PersistenceContext private val em: EntityManager
 
     private val user = UserEntity::class.java
 
-    override fun getPage(model: UserPageRequestModel): PageResponseModel<UserEntity> {
+    override fun getPage(model: UserPageRequestModel, principal: Principal): PageResponseModel<UserEntity> {
         val cb = em.criteriaBuilder
         val cq = cb.createQuery(user)
         val root = cq.from(user)
@@ -40,9 +42,13 @@ class UserPagingRepositoryImpl(@PersistenceContext private val em: EntityManager
                 predicates.add(cb.notEqual(root.get(role), Role.TEACHER))
             }
         }
+        val role1 = getRole(principal)
 
         if (model.userRoleFilter != null)
             predicates.add(cb.equal(root[role], model.userRoleFilter))
+        else if(role1 != Role.ADMIN) {
+            predicates.add(root[role].`in`(listOf(Role.TEACHER, Role.STUDENT)))
+        }
 
         cq.where(cb.and(*predicates.toTypedArray()))
         if (model.sortType == Sort.Direction.DESC)

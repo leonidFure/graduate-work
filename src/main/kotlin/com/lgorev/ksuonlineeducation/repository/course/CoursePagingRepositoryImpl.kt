@@ -30,8 +30,6 @@ class CoursePagingRepositoryImpl(@PersistenceContext private val em: EntityManag
             predicates.add(cb.equal(root.get(status), model.statusFilter))
         if (model.educationProgramId != null)
             predicates.add(cb.equal(root.get(educationProgramId), model.educationProgramId))
-        if (model.creationDateFrom != null && model.creationDateTo != null)
-            predicates.add(cb.between(root.get(creationDate), model.creationDateFrom, model.creationDateTo))
         if (model.educationProgramIds != null)
             predicates.add(root.get(educationProgramId).`in`(model.educationProgramIds))
         if (model.dateFrom != null && model.dateTo != null) {
@@ -50,7 +48,7 @@ class CoursePagingRepositoryImpl(@PersistenceContext private val em: EntityManag
         val sortField = when (model.sortField) {
             START_DATE -> startDate
             END_DATE -> endDate
-            else -> creationDate
+            else -> creationDateTime
         }
 
         cq.where(cb.and(*predicates.toTypedArray()))
