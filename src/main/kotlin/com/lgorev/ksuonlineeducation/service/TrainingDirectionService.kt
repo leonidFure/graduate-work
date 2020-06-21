@@ -65,6 +65,7 @@ class TrainingDirectionService(private val trainingDirectionRepository: Training
             }
             if (facultyService.existFacultyById(model.facultyId)) {
                 dir.name = model.name
+                dir.code = model.code
                 dir.description = model.description
                 dir.facultyId = model.facultyId
 

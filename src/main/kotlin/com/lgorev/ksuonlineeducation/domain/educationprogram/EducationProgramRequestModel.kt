@@ -21,4 +21,4 @@ data class EducationProgramRequestModel(
         val isActual: Boolean = true
 )
 
-        enum class EducationProgramStatus { EP_DRAFT, EP_AWAITING_CONFIRMATION, EP_CREATED }
+enum class EducationProgramStatus { EP_DRAFT, EP_AWAITING_CONFIRMATION, EP_CREATED }

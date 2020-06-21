@@ -42,7 +42,7 @@ class EducationProgramService(private val educationProgramRepository: EducationP
     fun getPage(model: EducationProgramRequestPageModel): PageResponseModel<EducationProgramResponseModel> {
         if (model.creationDateFrom != null && model.creationDateTo != null && model.creationDateFrom.isBefore(model.creationDateTo))
             throw BadRequestException("Промежуток задан некоректно")
-        if(model.teacherId != null) {
+        if (model.teacherId != null) {
             val teachersEducationPrograms = teachersEducationProgramService.getTeachersEducationProgramsByTeacherId(model.teacherId)
             model.ids = teachersEducationPrograms.map { it.educationProgramId }
         }
@@ -65,8 +65,10 @@ class EducationProgramService(private val educationProgramRepository: EducationP
 
     @Throws(NotFoundException::class, UniqueConstraintException::class)
     fun updateEducationProgram(model: EducationProgramRequestModel): EducationProgramResponseModel {
-        if (educationProgramRepository.existsByName(model.name))
-            throw UniqueConstraintException("Программа обучения ${model.name} уже существует")
+        educationProgramRepository.findByName(model.name)?.let {
+            if (it.id != model.id)
+                throw UniqueConstraintException("Программа обучения ${model.name} уже существует")
+        }
 
         if (!subjectService.existSubjectById(model.subjectId))
             throw NotFoundException("Предмет не найден")
@@ -74,8 +76,7 @@ class EducationProgramService(private val educationProgramRepository: EducationP
         educationProgramRepository.findByIdOrNull(model.id)?.let { program ->
             program.subjectId = model.subjectId
             program.name = model.name
-            program.description = model.description?: ""
-            program.creationDate = model.creationDate
+            program.description = model.description ?: ""
             program.status = model.status
             program.isActual = model.isActual
             return program.toModel()
@@ -103,4 +104,4 @@ private fun EducationProgramEntity.toModel(subject: SubjectResponseModel?) =
         EducationProgramResponseModel(id, subjectId, name, description, creationDate, status, isActual, subject = subject)
 
 private fun EducationProgramRequestModel.toEntity() =
-        EducationProgramEntity(id, subjectId, name, description?: "", creationDate, status, isActual)
+        EducationProgramEntity(id, subjectId, name, description ?: "", creationDate, status, isActual)

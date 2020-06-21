@@ -52,11 +52,19 @@ class SubjectService(private val subjectRepository: SubjectRepository) {
     fun existsSubjectsByIds(ids: MutableSet<UUID>) = subjectRepository.existsByIdIn(ids)
 
     fun getSubjectPage(model: SubjectRequestPageModel): PageResponseModel<SubjectResponseModel> {
-        return if (model.trainingDirectionIds.isNotEmpty()) {
-            val subjectForEntranceIds = subjectForEntranceService.getSubjectForEntranceByDirectionIds(model.trainingDirectionIds)
-            val ids = subjectForEntranceIds.map { it.subjectsForEntranceId.subjectId }.toMutableSet()
-            subjectRepository.findPage(model, ids).map { it.toModel() }
-        } else subjectRepository.findPage(model, null).map { it.toModel() }
+        return when {
+            model.trainingDirectionIds.isNotEmpty() -> {
+                val subjectForEntranceIds = subjectForEntranceService.getSubjectForEntranceByDirectionIds(model.trainingDirectionIds)
+                val ids = subjectForEntranceIds.map { it.subjectsForEntranceId.subjectId }.toMutableSet()
+                subjectRepository.findPage(model, ids).map { it.toModel() }
+            }
+            model.trainingDirectionId != null -> {
+                val subjectForEntranceIds = subjectForEntranceService.getSubjectForEntranceByDirectionIds(mutableSetOf(model.trainingDirectionId))
+                val ids = subjectForEntranceIds.map { it.subjectsForEntranceId.subjectId }.toMutableSet()
+                subjectRepository.findPage(model, ids).map { it.toModel() }
+            }
+            else -> subjectRepository.findPage(model, null).map { it.toModel() }
+        }
     }
 
     fun deleteSubject(id: UUID) {

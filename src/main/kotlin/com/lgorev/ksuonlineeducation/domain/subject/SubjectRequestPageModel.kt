@@ -11,5 +11,6 @@ data class SubjectRequestPageModel(
         val nameFilter: String? = null,
         val typeFilter: SubjectType? = null,
         val ids: MutableSet<UUID>? = null,
-        val trainingDirectionIds: MutableSet<UUID> = mutableSetOf()
+        val trainingDirectionIds: MutableSet<UUID> = mutableSetOf(),
+        val trainingDirectionId: UUID? = null
 )
