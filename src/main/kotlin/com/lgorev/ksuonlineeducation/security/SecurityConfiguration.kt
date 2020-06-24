@@ -31,6 +31,11 @@ class SecurityConfiguration : WebSecurityConfigurerAdapter() {
                 .addFilter(JwtAuthorizationFilter(authenticationManager()))
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and().oauth2Login()
+                .loginPage("/error")
+                .defaultSuccessUrl("/ouath2/login")
+                .redirectionEndpoint()
+                .baseUri("/oauth2/redirect")
     }
 
     @Bean
