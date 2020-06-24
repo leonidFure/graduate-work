@@ -25,7 +25,7 @@ class TimetableService(private val timetableRepository: TimetableRepository) {
     @Throws(NotFoundException::class)
     fun getTimetableById(id: UUID): TimetableResponseModel {
         timetableRepository.findByIdOrNull(id)?.let { return it.toModel() }
-        throw NotFoundException("Расписание не найдено")
+        throw BadRequestException("Расписание не найдено")
     }
 
     fun getTimetableByIdOrNull(id: UUID) = timetableRepository.findByIdOrNull(id)
@@ -36,7 +36,7 @@ class TimetableService(private val timetableRepository: TimetableRepository) {
     @Throws(NotFoundException::class, BadRequestException::class)
     fun addTimetable(model: TimetableRequestModel): TimetableResponseModel {
         if (courseService.existCourseById(model.courseId))
-            throw NotFoundException("Курс не найден")
+            throw BadRequestException("Курс не найден")
         if (model.startTime.isAfter(model.endTime) || model.startTime == model.endTime)
             throw BadRequestException("Некоректное время проведение занятия")
         val timetable = timetableRepository.save(model.toEntity()).toModel()
@@ -57,7 +57,7 @@ class TimetableService(private val timetableRepository: TimetableRepository) {
     @Throws(NotFoundException::class, BadRequestException::class)
     fun updateTimetable(model: TimetableRequestModel): TimetableResponseModel {
         if (courseService.existCourseById(model.courseId))
-            throw NotFoundException("Курс не найден")
+            throw BadRequestException("Курс не найден")
         if (model.startTime.isAfter(model.endTime) || model.startTime == model.endTime)
             throw BadRequestException("Некоректное время проведение занятия")
 
@@ -71,7 +71,7 @@ class TimetableService(private val timetableRepository: TimetableRepository) {
             val responseModel = timetable.toModel()
             lessonService.updateLessonsForCourse(mutableListOf(responseModel))
             return responseModel
-        } else throw NotFoundException("Расписание не найдено")
+        } else throw BadRequestException("Расписание не найдено")
     }
 
     fun deleteTimetable(id: UUID) {

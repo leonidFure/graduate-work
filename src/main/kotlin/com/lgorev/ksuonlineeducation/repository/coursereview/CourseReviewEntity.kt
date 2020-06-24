@@ -22,5 +22,5 @@ data class CourseReviewId(
         @Column(name = "course_id")
         val courseId: UUID,
         @Column(name = "user_id")
-        val userId: UUID
+        val userId: UUID?
 ) : Serializable

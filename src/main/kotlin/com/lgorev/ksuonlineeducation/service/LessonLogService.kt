@@ -2,6 +2,7 @@ package com.lgorev.ksuonlineeducation.service
 
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonLogModel
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonLogPageRequestModel
+import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonLogEntity
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonLogRepository
 import javassist.NotFoundException
@@ -19,7 +20,7 @@ class LessonLogService(private val lessonLogRepository: LessonLogRepository) {
     @Throws(NotFoundException::class)
     fun addLessonLog(model: LessonLogModel): LessonLogModel {
         if (lessonService.existSubjectById(model.lessonId))
-            throw NotFoundException("Занятие не найдено")
+            throw BadRequestException("Занятие не найдено")
         return lessonLogRepository.save(model.toEntity()).toModel()
     }
 

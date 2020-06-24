@@ -13,12 +13,16 @@ import java.util.*
 class CourseReviewController(private val courseReviewService: CourseReviewService) {
 
     @PostMapping
-    @PreAuthorize("hasAuthority('STUDENT')")
+    @PreAuthorize("hasAuthority('STUDENT') or hasAuthority('ADMIN')")
     fun add(@RequestBody model: CourseReviewModel, principal: Principal) {
         val userId = getUserId(principal)
         if (userId != null) model.userId = userId
         courseReviewService.addReview(model)
     }
+
+    @GetMapping("list")
+    @PreAuthorize("isAuthenticated()")
+    fun getListByCourseId(@RequestParam id: UUID) = courseReviewService.getRatings(id)
 
     @DeleteMapping
     @PreAuthorize("hasAuthority('STUDENT')")

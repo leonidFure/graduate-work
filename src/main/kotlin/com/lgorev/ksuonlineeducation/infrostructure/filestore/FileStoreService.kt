@@ -22,6 +22,7 @@ import java.util.*
 
 @Service
 class FileStoreService(private val resourceLoader: ResourceLoader) {
+
     @Value("\${file.path.avatar}")
     private lateinit var pathAvatar: String
 

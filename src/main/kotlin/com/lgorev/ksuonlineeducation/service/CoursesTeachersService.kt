@@ -25,9 +25,7 @@ class CoursesTeachersService(private val coursesTeachersRepository: CoursesTeach
     @Throws(NotFoundException::class, BadRequestException::class)
     fun addTeacherToCourse(model: CoursesTeachersModel) {
         if (!courseService.existCourseById(model.courseId))
-            throw NotFoundException("Курс не найден")
-        if (!userService.existsTeacherById(model.teacherId))
-            throw NotFoundException("Преподаватель не найден")
+            throw BadRequestException("Курс не найден")
         coursesTeachersRepository.save(model.toEntity())
     }
 

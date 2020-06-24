@@ -56,7 +56,7 @@ class CourseService(private val courseRepository: CourseRepository) {
             model.subCount = courseSubscriptionService.getByCourseId(courseEntity.id).count()
             return model
         }
-        throw NotFoundException("Курс не найден")
+        throw BadRequestException("Курс не найден")
     }
 
     fun getCoursePage(model: CourseRequestPageModel): PageResponseModel<CourseResponseModel> {
@@ -126,7 +126,7 @@ class CourseService(private val courseRepository: CourseRepository) {
         if (model.endDate.isBefore(model.startDate))
             throw BadRequestException("Период обучени задан некоретно")
         if (!educationProgramService.existEducationProgramById(model.educationProgramId))
-            throw NotFoundException("Программа обучения не найдена")
+            throw BadRequestException("Программа обучения не найдена")
         courseRepository.findByIdOrNull(model.id)?.let { course ->
             course.status = model.status
             course.startDate = model.startDate
@@ -134,7 +134,7 @@ class CourseService(private val courseRepository: CourseRepository) {
             course.isActual = model.isActual
             return course.toModel()
         }
-        throw NotFoundException("Курс не найден")
+        throw BadRequestException("Курс не найден")
     }
 
     fun deleteCourse(id: UUID) {

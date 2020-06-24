@@ -58,7 +58,7 @@ class EducationProgramService(private val educationProgramRepository: EducationP
             throw UniqueConstraintException("Программа обучения ${model.name} уже существует")
 
         if (!subjectService.existSubjectById(model.subjectId))
-            throw NotFoundException("Предмет не найден")
+            throw BadRequestException("Предмет не найден")
 
         return educationProgramRepository.save(model.toEntity()).toModel()
     }
@@ -71,7 +71,7 @@ class EducationProgramService(private val educationProgramRepository: EducationP
         }
 
         if (!subjectService.existSubjectById(model.subjectId))
-            throw NotFoundException("Предмет не найден")
+            throw BadRequestException("Предмет не найден")
 
         educationProgramRepository.findByIdOrNull(model.id)?.let { program ->
             program.subjectId = model.subjectId
@@ -81,7 +81,7 @@ class EducationProgramService(private val educationProgramRepository: EducationP
             program.isActual = model.isActual
             return program.toModel()
         }
-        throw NotFoundException("Программа обучения не найдена")
+        throw BadRequestException("Программа обучения не найдена")
     }
 
     fun deleteEducationProgram(id: UUID) {
@@ -98,10 +98,10 @@ class EducationProgramService(private val educationProgramRepository: EducationP
 }
 
 private fun EducationProgramEntity.toModel() =
-        EducationProgramResponseModel(id, subjectId, name, description, creationDate, status, isActual)
+        EducationProgramResponseModel(id, subjectId, name, description, creationDateTime, status, isActual)
 
 private fun EducationProgramEntity.toModel(subject: SubjectResponseModel?) =
-        EducationProgramResponseModel(id, subjectId, name, description, creationDate, status, isActual, subject = subject)
+        EducationProgramResponseModel(id, subjectId, name, description, creationDateTime, status, isActual, subject = subject)
 
 private fun EducationProgramRequestModel.toEntity() =
-        EducationProgramEntity(id, subjectId, name, description ?: "", creationDate, status, isActual)
+        EducationProgramEntity(id, subjectId, name, description ?: "", creationDateTime, status, isActual)

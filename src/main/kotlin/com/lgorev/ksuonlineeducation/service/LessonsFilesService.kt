@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonsFilesEntity
 import com.lgorev.ksuonlineeducation.repository.lesson.LessonsFilesId
@@ -20,7 +21,7 @@ class LessonsFilesService(private val lessonsFilesRepository: LessonsFilesReposi
 
     fun addFileToLesson(lessonId: UUID, fileId: UUID) {
         if (!lessonService.existsLessonById(lessonId))
-            throw NotFoundException("Занятие не найдено")
+            throw BadRequestException("Занятие не найдено")
         if(!fileService.existsFileById(fileId))
             throw NotFoundException("Файл не найден")
         lessonsFilesRepository.save(LessonsFilesEntity(LessonsFilesId(lessonId, fileId)))

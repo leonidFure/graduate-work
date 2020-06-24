@@ -4,6 +4,7 @@ import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
 import com.lgorev.ksuonlineeducation.domain.common.map
 import com.lgorev.ksuonlineeducation.domain.faculty.*
 import com.lgorev.ksuonlineeducation.domain.user.UserResponseModel
+import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.exception.UniqueConstraintException
 import com.lgorev.ksuonlineeducation.repository.faculty.*
@@ -30,7 +31,7 @@ class FacultyService(private val facultyRepository: FacultyRepository) {
         if (facultyRepository.existsByName(model.name))
             throw UniqueConstraintException(message = "Факультет ${model.name} уже существует")
         if (!userService.existsTeacherById(model.managerId))
-            throw NotFoundException("Преподаватель не найден")
+            throw BadRequestException("Преподаватель не найден")
 
         if (facultyRepository.existsByManagerId(model.managerId))
             throw UniqueConstraintException(message = "За данным преподавателем уже закреплен факультет")
@@ -49,7 +50,7 @@ class FacultyService(private val facultyRepository: FacultyRepository) {
         }
 
         if (!userService.existsTeacherById(model.managerId))
-            throw NotFoundException("Преподаватель не найден")
+            throw BadRequestException("Преподаватель не найден")
 
         facultyRepository.findByManagerId(model.managerId)?.let { faculty ->
             if (faculty.id != model.id)
@@ -63,13 +64,13 @@ class FacultyService(private val facultyRepository: FacultyRepository) {
             faculty.managerId = model.managerId
             teachersFacultiesService.addTeacherToFaculty(TeachersFacultiesModel(model.managerId, faculty.id))
             return faculty.toModel()
-        } else throw NotFoundException(message = "Факультет не найден")
+        } else throw BadRequestException(message = "Факультет не найден")
     }
 
     @Throws(NotFoundException::class)
     fun     getFacultyById(id: UUID): FacultyResponseModel {
         facultyRepository.findByIdOrNull(id)?.let { return it.toModel() }
-        throw NotFoundException("Факультет не найден")
+        throw BadRequestException("Факультет не найден")
     }
 
     fun existFacultyById(id: UUID) = facultyRepository.existsById(id)
@@ -77,7 +78,7 @@ class FacultyService(private val facultyRepository: FacultyRepository) {
     @Throws(NotFoundException::class)
     fun getFacultyByManagerId(id: UUID): FacultyResponseModel {
         facultyRepository.findByManagerId(id)?.let { return it.toModel() }
-        throw NotFoundException("Факультет не найден")
+        throw BadRequestException("Факультет не найден")
     }
 
     fun getFacultyPage(model: FacultyPageRequestModel): PageResponseModel<FacultyResponseModel> {

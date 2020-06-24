@@ -1,6 +1,7 @@
 package com.lgorev.ksuonlineeducation.service
 
 import com.lgorev.ksuonlineeducation.domain.course.CourseSubscriptionModel
+import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.UniqueConstraintException
 import com.lgorev.ksuonlineeducation.repository.course.CourseSubscriptionEntity
 import com.lgorev.ksuonlineeducation.repository.course.CourseSubscriptionId
@@ -25,9 +26,9 @@ class CourseSubscriptionService(private val courseSubscriptionRepository: Course
     fun subscribeUserOnCourse(model: CourseSubscriptionModel) {
         model.userId?.let { userId ->
             if (!courseService.existCourseById(model.courseId))
-                throw NotFoundException("Курс не найден")
+                throw BadRequestException("Курс не найден")
             if (!userService.existUserById(userId))
-                throw NotFoundException("Пользователь не найден")
+                throw BadRequestException("Пользователь не найден")
             val id = CourseSubscriptionId(model.courseId, userId)
             if (courseSubscriptionRepository.existsById(id))
                 throw UniqueConstraintException("Пользователь уже подписан на курс")

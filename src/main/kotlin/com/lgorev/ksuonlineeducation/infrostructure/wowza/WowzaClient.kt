@@ -33,27 +33,11 @@ class WowzaClient {
     fun startLiveEvent(liveStreamId: String): LiveEventStateResponse? {
         val url = "${wowzaUrl}/live_streams/${liveStreamId}/start"
         return put<Unit, LiveEventStateResponse>(url, apiKey, accessKey)
-        //curl -X PUT \
-        //-H "Content-Type: application/json" \
-        //-H "wsc-api-key: ${WSC_API_KEY}" \
-        //-H "wsc-access-key: ${WSC_ACCESS_KEY}" \
-        //"${WSC_HOST}/api/${WSC_VERSION}/live_streams/[live_stream_id]/start"
     }
 
     fun stopLiveEvent(liveStreamId: String): LiveEventStateResponse? {
         val url = "${wowzaUrl}/live_streams/${liveStreamId}/stop"
         return put<Unit, LiveEventStateResponse>(url, apiKey, accessKey)
-        //curl -X PUT \
-        //-H "wsc-api-key: ${WSC_API_KEY}" \
-        //-H "wsc-access-key: ${WSC_ACCESS_KEY}" \
-        //"${WSC_HOST}/api/${WSC_VERSION}/live_streams/[live_stream_id]/stop"
-    }
-
-    fun viewLiveEvent() {
-        //curl -X GET \
-        //-H "wsc-api-key: ${WSC_API_KEY}" \
-        //-H "wsc-access-key: ${WSC_ACCESS_KEY}" \
-        //"${WSC_HOST}/api/${WSC_VERSION}/live_streams/[live_stream_id]"
     }
 
     fun getState(id: String): LiveEventStateResponse? {
@@ -153,62 +137,6 @@ class WowzaClient {
                 throw VideoResponseException(e.message)
             }
         }
-
-//        /**
-//         * PATCH method for Vimeo API
-//         *
-//         * Modifies a resource. The body of the request contains the new resource representation.
-//         *
-//         * @param T the type of response
-//         * @param R the type of body
-//         * @property url the url of API
-//         * @property accessToken the token of authorization user in Vimeo
-//         * @property body the body in http method
-//         * @throws VideoResponseException
-//         * */
-//        @Throws(VideoResponseException::class)
-//        inline fun <R, reified T : Any> patch(url: String, accessToken: String, body: R? = null): T? {
-//            val restTemplate = RestTemplate()
-//            val requestFactory = HttpComponentsClientHttpRequestFactory()
-//            restTemplate.requestFactory = requestFactory
-//            val headers = HttpHeaders()
-//            val token = "bearer $accessToken"
-//            headers[HttpHeaders.AUTHORIZATION] = token
-//            headers[HttpHeaders.ACCEPT] = VIMEO_ACCEPT
-//            val request = HttpEntity<R>(body, headers)
-//            try {
-//                val response = restTemplate.exchange(url, HttpMethod.PATCH, request, T::class.java)
-//                if (response.statusCode.isError) throw VideoResponseException("Ошибка при зарпосе к сервису Vimeo")
-//                return response.body
-//            } catch (e: Throwable) {
-//                throw VideoResponseException(e.message)
-//            }
-//        }
-//
-//        /**
-//         * DELETE method for Vimeo API
-//         *
-//         * Deletes a resource or disassociates one resource from another.
-//         *
-//         * @property url the url of API
-//         * @property accessToken the token of authorization user in Vimeo
-//         * @throws VideoResponseException
-//         * */
-//        @Throws(VideoResponseException::class)
-//        fun delete(url: String, accessToken: String) {
-//            val restTemplate = RestTemplate()
-//            val headers = HttpHeaders()
-//            val token = "bearer $accessToken"
-//            headers[HttpHeaders.AUTHORIZATION] = token
-//            headers[HttpHeaders.ACCEPT] = VIMEO_ACCEPT
-//            val request = HttpEntity<Unit>(headers)
-//            try {
-//                val response = restTemplate.exchange(url, HttpMethod.DELETE, request, Unit::class.java)
-//                if (response.statusCode.isError) throw VideoResponseException("Ошибка при зарпосе к сервису Vimeo")
-//            } catch (e: Throwable) {
-//                throw VideoResponseException(e.message)
-//            }
-//        }
     }
 
 

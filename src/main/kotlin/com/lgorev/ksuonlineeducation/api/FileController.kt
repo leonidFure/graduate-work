@@ -39,6 +39,13 @@ class FileController(private val fileService: FileService) {
         return getFile(multipartFile)
     }
 
+    @GetMapping("users/changed")
+    @PreAuthorize("permitAll()")
+    fun getAvatarChanged(@RequestParam id: UUID): ResponseEntity<*> {
+        val multipartFile = fileService.getUserImage(id)
+        return getFile(multipartFile)
+    }
+
     @PostMapping("courses")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
     fun addCourseImage(@RequestParam image: MultipartFile, @RequestParam courseId: UUID) {

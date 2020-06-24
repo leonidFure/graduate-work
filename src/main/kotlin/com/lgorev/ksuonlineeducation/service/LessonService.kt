@@ -52,7 +52,7 @@ class LessonService(private val lessonRepository: LessonRepository) {
             model.isLiveEventAvailable = now.isAfter(model.startTime) && now.isBefore(model.endTime)
             return model
         }
-        throw NotFoundException("Занятие не найдено")
+        throw BadRequestException("Занятие не найдено")
     }
 
     fun existsLessonById(id: UUID) = lessonRepository.existsById(id)
@@ -141,14 +141,14 @@ class LessonService(private val lessonRepository: LessonRepository) {
     @Throws(NotFoundException::class, BadRequestException::class)
     fun addLesson(model: LessonRequestModel): LessonResponseModel {
         if (!courseService.existCourseById(model.courseId))
-            throw NotFoundException("Курс не найден")
+            throw BadRequestException("Курс не найден")
 
         val timetable = timetableService.getTimetableByIdOrNull(model.timetableId)
         if (timetable != null) {
             if (timetable.courseId != model.courseId)
                 throw BadRequestException("Курс занятия и расписания не совпадают")
         } else {
-            throw NotFoundException("Расписание не найдено")
+            throw BadRequestException("Расписание не найдено")
         }
 
         val lesson = lessonRepository.save(model.toEntity()).toModel()
@@ -168,7 +168,7 @@ class LessonService(private val lessonRepository: LessonRepository) {
             lessonLogService.addLessonLog(lessonLog)
             return lesson.toModel()
         }
-        throw NotFoundException("Занятие не найдено")
+        throw BadRequestException("Занятие не найдено")
     }
 
     fun deleteLesson(id: UUID) {

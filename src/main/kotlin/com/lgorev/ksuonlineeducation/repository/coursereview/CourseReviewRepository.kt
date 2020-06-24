@@ -11,4 +11,7 @@ interface CourseReviewRepository : CrudRepository<CourseReviewEntity, CourseRevi
 
     @Query("SELECT new CourseRatingEntity(e.courseReviewId.courseId, CASE WHEN COUNT(e) > 0 THEN (AVG(e.rating)) ELSE 0.0 END, COUNT(e)) FROM CourseReviewEntity e WHERE e.courseReviewId.courseId in :courseIds GROUP BY e.courseReviewId.courseId")
     fun findAllByCourseIds(@Param("courseIds") courseIds: MutableSet<UUID>): MutableSet<CourseRatingEntity>
+
+    @Query("SELECT e FROM CourseReviewEntity e WHERE e.courseReviewId.courseId = :courseId")
+    fun findAllById(@Param("courseId") id: UUID): MutableSet<CourseReviewEntity>
 }

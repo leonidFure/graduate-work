@@ -30,7 +30,7 @@ class UserController(private val userService: UserService) {
         return if (userId != null)
             ok(userService.getUserById(userId))
         else
-            throw NotFoundException("Пользователь не найден")
+            throw BadRequestException("Пользователь не найден")
     }
 
     @PutMapping
@@ -61,12 +61,7 @@ class UserController(private val userService: UserService) {
     @ResponseStatus(HttpStatus.OK)
     fun updatePassword(@RequestBody model: PasswordModel, principal: Principal) {
         val userId = getUserId(principal)
-
-        if (getRole(principal) != Role.ADMIN && model.id != null && userId != model.id)
-            throw AuthException("Вы не можете поменять пароль другому пользователю")
-
-        if (model.id != null) model.id = userId
-        userService.updatePassword(model)
+        if (userId != null) userService.updatePassword(model, userId)
     }
 
     @PostMapping("page")

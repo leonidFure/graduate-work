@@ -3,6 +3,7 @@ package com.lgorev.ksuonlineeducation.service
 import com.lgorev.ksuonlineeducation.domain.video.CreateVideoModel
 import com.lgorev.ksuonlineeducation.domain.video.Upload
 import com.lgorev.ksuonlineeducation.domain.video.VideoPageRequestModel
+import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.NotFoundException
 import com.lgorev.ksuonlineeducation.exception.VideoResponseException
 import com.lgorev.ksuonlineeducation.infrostructure.vimeo.VimeoClient
@@ -27,7 +28,7 @@ class VideoService {
     fun getVideoByLessonId(id: UUID): Video {
         val lesson = lessonService.getLessonById(id)
         if (lesson.videoUri == null)
-            throw NotFoundException("У данного занятия отсутвуют видео материалы")
+            throw BadRequestException("У данного занятия отсутвуют видео материалы")
         return vimeoClient.getVideo(lesson.videoUri) ?: throw NotFoundException("Видео не найдено")
     }
 

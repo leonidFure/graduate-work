@@ -42,10 +42,11 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
     @Throws(NotFoundException::class)
     fun getUserById(id: UUID): UserResponseModel {
         userRepository.findByIdOrNull(id)?.let { return it.toModel() }
-        throw NotFoundException("Пользователь не найден")
+        throw BadRequestException("Пользователь не найден")
     }
 
     fun getUsersByIds(ids: MutableSet<UUID>) = userRepository.findAllById(ids).map { it.toModel() }
+    fun getUsersByIds2(ids: MutableSet<UUID?>) = userRepository.findAllById(ids).map { it.toModel() }
 
     @Throws(NotFoundException::class)
     fun updateUser(model: UserRequestModel): UserResponseModel {
@@ -57,34 +58,36 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
             user.info = model.info
             return user.toModel()
         }
-        throw NotFoundException("Пользователь не найден")
+        throw BadRequestException("Пользователь не найден")
     }
 
     @Throws(BadRequestException::class)
     fun saveUser(model: UserRequestModel): UserResponseModel {
-        if(userRepository.existsByEmail(model.email))
+        if (userRepository.existsByEmail(model.email))
             throw BadRequestException("Пользователь с логином \"${model.email}\" уже существует")
         val response = userRepository.save(model.toUserEntity()).toModel()
-        if(model.facultiesIds != null) {
+        if (model.facultiesIds != null) {
             val list = model.facultiesIds.map { TeachersFacultiesEntity(TeachersFacultiesId(response.id, it)) }
             teachersFacultiesService.saveAll(list)
         }
         return response
     }
 
-    @Throws(NotFoundException::class)
+    @Throws(BadRequestException::class)
     fun setUserNotActive(id: UUID) {
         val user = userRepository.findByIdOrNull(id)
         if (user != null) user.isActive = false
-        else throw NotFoundException("Пользователь не найден")
+        else throw BadRequestException("Пользователь не найден")
     }
 
     @Throws(AuthException::class)
-    fun updatePassword(model: PasswordModel) {
-        userRepository.findByIdOrNull(model.id)?.let { user ->
-            user.password = BCrypt.hashpw(model.password, BCrypt.gensalt(12))
-        }
-        throw NotFoundException("Пользователь не найден")
+    fun updatePassword(model: PasswordModel, id: UUID) {
+        val user = userRepository.findByIdOrNull(id)
+        if (user != null) {
+            if (BCrypt.checkpw(model.oldPassword, user.password)) {
+                user.password = BCrypt.hashpw(model.password, BCrypt.gensalt(12))
+            } else throw BadRequestException("Вы указали не верный пароль")
+        } else throw BadRequestException("Пользователь не найден")
     }
 
     fun existUserById(id: UUID) = userRepository.existsById(id)
@@ -100,7 +103,7 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
     fun getNotCourseTeachers(courseId: UUID): List<UserResponseModel> {
         val coursesTeachers = coursesTeacherService.getCoursesTeachersByCourseId(courseId)
         val list = coursesTeachers.map { it.teacherId }
-        return if(list.isEmpty()) userRepository.findAllByRole(Role.TEACHER).map { it.toModel() }
+        return if (list.isEmpty()) userRepository.findAllByRole(Role.TEACHER).map { it.toModel() }
         else userRepository.findAllByRoleAndIdNotIn(Role.TEACHER, list).map { it.toModel() }
     }
 
@@ -159,7 +162,6 @@ class UserService(private val userRepository: UserRepository) : UserDetailsServi
 
 
 fun UserEntity.toModel() = UserResponseModel(id, firstName, lastName, patronymic, email, role, "/api/files/users?id=${id}", startWorkDate, info, imageId, registrationDate = registrationDate)
-
 
 
 private fun UserEntity.toUserModel() = UserModel(id, firstName, lastName, patronymic, email, password, role)

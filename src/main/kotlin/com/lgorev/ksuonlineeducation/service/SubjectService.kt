@@ -6,6 +6,7 @@ import com.lgorev.ksuonlineeducation.domain.subject.SubjectListRequestModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectResponseModel
+import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.UniqueConstraintException
 import com.lgorev.ksuonlineeducation.repository.subject.SubjectEntity
 import com.lgorev.ksuonlineeducation.repository.subject.SubjectRepository
@@ -38,13 +39,13 @@ class SubjectService(private val subjectRepository: SubjectRepository) {
             subject.type = model.type
             return subject.toModel()
         }
-        throw NotFoundException("Предмет не найден")
+        throw BadRequestException("Предмет не найден")
     }
 
     @Throws(NotFoundException::class)
     fun getSubjectById(id: UUID): SubjectResponseModel {
         subjectRepository.findByIdOrNull(id)?.let { subject -> return subject.toModel() }
-        throw NotFoundException("Предмет не найден")
+        throw BadRequestException("Предмет не найден")
     }
 
     fun existSubjectById(id: UUID) = subjectRepository.existsById(id)
