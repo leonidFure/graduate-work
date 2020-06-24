@@ -2,7 +2,7 @@ package com.lgorev.ksuonlineeducation.domain.course
 
 import java.util.*
 
-data class CoursesTeachersRequestModel(
+data class CourseSubscriptionModel (
         val courseId: UUID,
-        val teacherId: UUID
+        var userId: UUID? = null
 )

@@ -42,7 +42,7 @@ class CustomAuthEntryPoint : AuthenticationEntryPoint {
         mapper.registerModule(JavaTimeModule())
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
-        val generalResponse = GeneralResponse(LocalDateTime.now(), HttpStatus.UNAUTHORIZED, "Вы не авторизовались")
+        val generalResponse = GeneralResponse(LocalDateTime.now(), HttpStatus.UNAUTHORIZED, "Вы не авторизовались!")
 
         val httpResponse = ServletServerHttpResponse(response)
         httpResponse.setStatusCode(HttpStatus.UNAUTHORIZED)

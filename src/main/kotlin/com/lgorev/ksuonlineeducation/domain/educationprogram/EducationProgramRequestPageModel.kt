@@ -1,12 +1,12 @@
 package com.lgorev.ksuonlineeducation.domain.educationprogram
 
-import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import org.springframework.data.domain.Sort.Direction
-import java.time.LocalDate
+import org.springframework.format.annotation.DateTimeFormat
+import java.time.LocalDateTime
 import java.util.*
 
 data class EducationProgramRequestPageModel(
@@ -16,13 +16,15 @@ data class EducationProgramRequestPageModel(
         val nameFilter: String? = null,
         val statusFilter: EducationProgramStatus? = null,
         val actualFilter: Boolean? = null,
-        @JsonSerialize(using = LocalDateSerializer::class)
-        @JsonDeserialize(using = LocalDateDeserializer::class)
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-        val creationDateFrom: LocalDate? = null,
-        @JsonSerialize(using = LocalDateSerializer::class)
-        @JsonDeserialize(using = LocalDateDeserializer::class)
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-        val creationDateTo: LocalDate? = null,
-        val subjectIds: MutableSet<UUID> = mutableSetOf()
+        @JsonSerialize(using = LocalDateTimeSerializer::class)
+        @JsonDeserialize(using = LocalDateTimeDeserializer::class)
+        @DateTimeFormat
+        val creationDateFrom: LocalDateTime? = null,
+        @JsonSerialize(using = LocalDateTimeSerializer::class)
+        @JsonDeserialize(using = LocalDateTimeDeserializer::class)
+        @DateTimeFormat
+        val creationDateTo: LocalDateTime? = null,
+        val subjectIds: MutableSet<UUID> = mutableSetOf(),
+        val teacherId: UUID? = null,
+        var ids: List<UUID>? =null
 )

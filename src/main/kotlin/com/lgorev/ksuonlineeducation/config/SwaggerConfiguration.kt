@@ -37,8 +37,12 @@ class SwaggerConfiguration {
         return SecurityContext.builder()
                 .securityReferences(defaultAuth())
                 .forPaths(PathSelectors.regex("/api/.*"))
-                .forPaths(Predicates.not(PathSelectors.regex("/api/auth.*")))
-                .forPaths(PathSelectors.regex("/api/auth/refresh"))
+                .forPaths(
+                        Predicates.and(
+                                Predicates.not(PathSelectors.regex("/api/auth/reg.*")),
+                                Predicates.not(PathSelectors.regex("/api/auth/log.*"))
+                        )
+                )
                 .build()
     }
 

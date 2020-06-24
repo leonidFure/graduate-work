@@ -6,7 +6,7 @@ import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.Table
 
-@Entity
+@Entity(name = "theme")
 @Table
 data class ThemeEntity(
         @Id

@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface ThemeRepository : CrudRepository<ThemeEntity, UUID>, ThemePagingRepository
+interface ThemeRepository : CrudRepository<ThemeEntity, UUID>, ThemePagingRepository {
+    fun findAllByEducationProgramId(id: UUID): MutableSet<ThemeEntity>
+}

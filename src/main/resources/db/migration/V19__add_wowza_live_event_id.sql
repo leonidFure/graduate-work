@@ -1,0 +1,1 @@
+ALTER TABLE course ADD COLUMN live_event_id VARCHAR;

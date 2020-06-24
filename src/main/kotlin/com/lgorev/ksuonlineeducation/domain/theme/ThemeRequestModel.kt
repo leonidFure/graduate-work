@@ -4,8 +4,8 @@ import java.util.*
 
 data class ThemeRequestModel(
         val id: UUID = UUID.randomUUID(),
-        var parentThemeId: UUID?,
-        val number: Short,
+        var parentThemeId: UUID? = null,
+        val number: Short = 1,
         var educationProgramId: UUID,
         var name: String,
         var description: String

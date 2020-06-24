@@ -1,8 +1,12 @@
 package com.lgorev.ksuonlineeducation.service
 
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
+import com.lgorev.ksuonlineeducation.domain.common.map
+import com.lgorev.ksuonlineeducation.domain.subject.SubjectListRequestModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestPageModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectResponseModel
+import com.lgorev.ksuonlineeducation.exception.BadRequestException
 import com.lgorev.ksuonlineeducation.exception.UniqueConstraintException
 import com.lgorev.ksuonlineeducation.repository.subject.SubjectEntity
 import com.lgorev.ksuonlineeducation.repository.subject.SubjectRepository
@@ -21,52 +25,65 @@ class SubjectService(private val subjectRepository: SubjectRepository) {
     @Autowired
     private lateinit var subjectForEntranceService: SubjectForEntranceService
 
+
     @Throws(UniqueConstraintException::class)
     fun addSubject(model: SubjectRequestModel): SubjectResponseModel {
-        if (subjectRepository.existsByName(model.name))
-            throw UniqueConstraintException("Предмет \"${model.name}\" уже существует")
         return subjectRepository.save(model.toEntity()).toModel()
     }
 
     @Throws(NotFoundException::class, UniqueConstraintException::class)
     fun updateSubject(model: SubjectRequestModel): SubjectResponseModel {
-        subjectRepository.findByName(model.name)?.let { subject ->
-            if (subject.id != model.id)
-                throw UniqueConstraintException("Предмет \"${model.name}\" уже существует")
-        }
         subjectRepository.findByIdOrNull(model.id)?.let { subject ->
             subject.name = model.name
             subject.description = model.description
             subject.type = model.type
             return subject.toModel()
         }
-        throw NotFoundException("Предмет не найден")
+        throw BadRequestException("Предмет не найден")
     }
 
     @Throws(NotFoundException::class)
     fun getSubjectById(id: UUID): SubjectResponseModel {
         subjectRepository.findByIdOrNull(id)?.let { subject -> return subject.toModel() }
-        throw NotFoundException("Предмет не найден")
+        throw BadRequestException("Предмет не найден")
     }
 
     fun existSubjectById(id: UUID) = subjectRepository.existsById(id)
 
     fun existsSubjectsByIds(ids: MutableSet<UUID>) = subjectRepository.existsByIdIn(ids)
 
-    fun getSubjectPage(model: SubjectRequestPageModel): Page<SubjectResponseModel> {
-        return if(model.trainingDirectionIds.isNotEmpty()) {
-            val subjectForEntranceIds = subjectForEntranceService.getSubjectForEntranceByDirectionIds(model.trainingDirectionIds)
-            val ids = subjectForEntranceIds.map { it.subjectsForEntranceId.subjectId }.toMutableSet()
-            subjectRepository.findPage(model, ids).map { it.toModel() }
-        } else subjectRepository.findPage(model, null).map { it.toModel() }
+    fun getSubjectPage(model: SubjectRequestPageModel): PageResponseModel<SubjectResponseModel> {
+        return when {
+            model.trainingDirectionIds.isNotEmpty() -> {
+                val subjectForEntranceIds = subjectForEntranceService.getSubjectForEntranceByDirectionIds(model.trainingDirectionIds)
+                val ids = subjectForEntranceIds.map { it.subjectsForEntranceId.subjectId }.toMutableSet()
+                subjectRepository.findPage(model, ids).map { it.toModel() }
+            }
+            model.trainingDirectionId != null -> {
+                val subjectForEntranceIds = subjectForEntranceService.getSubjectForEntranceByDirectionIds(mutableSetOf(model.trainingDirectionId))
+                val ids = subjectForEntranceIds.map { it.subjectsForEntranceId.subjectId }.toMutableSet()
+                subjectRepository.findPage(model, ids).map { it.toModel() }
+            }
+            else -> subjectRepository.findPage(model, null).map { it.toModel() }
+        }
     }
 
     fun deleteSubject(id: UUID) {
         if (subjectRepository.existsById(id))
             subjectRepository.deleteById(id)
     }
+
+    fun getSubjectListByIds(model: SubjectListRequestModel) = subjectRepository.findByIdIn(model.ids).map { it.toModel() }
+
+    fun getSubjectListByIds(ids: MutableSet<UUID>) = subjectRepository.findByIdIn(ids).map { it.toModel() }
+
+    fun getSubjectList() = subjectRepository.findAll().map { it.toModel() }
+
+    fun setImageId(subjectId: UUID, imageId: UUID) {
+        subjectRepository.findByIdOrNull(subjectId)?.let { it.imageId = imageId }
+    }
 }
 
-private fun SubjectRequestModel.toEntity() = SubjectEntity(id, name, description, type)
+private fun SubjectRequestModel.toEntity() = SubjectEntity(id, name, description, type, null)
 
-private fun SubjectEntity.toModel() = SubjectResponseModel(id, name, description, type)
+private fun SubjectEntity.toModel() = SubjectResponseModel(id, name, description, type, imageId)

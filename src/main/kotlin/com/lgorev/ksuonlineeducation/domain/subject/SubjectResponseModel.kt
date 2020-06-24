@@ -6,5 +6,6 @@ data class SubjectResponseModel(
         val id: UUID = UUID.randomUUID(),
         val name: String,
         val description: String,
-        val type: SubjectType
+        val type: SubjectType,
+        val imageId: UUID?
 )

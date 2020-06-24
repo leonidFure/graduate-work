@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.api
 
+import com.lgorev.ksuonlineeducation.domain.subject.SubjectListRequestModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestPageModel
 import com.lgorev.ksuonlineeducation.service.SubjectService
@@ -19,6 +20,14 @@ class SubjectController(private val subjectService: SubjectService) {
     @PostMapping("page")
     @PreAuthorize("isAuthenticated()")
     fun getPage(@RequestBody model: SubjectRequestPageModel) = ok(subjectService.getSubjectPage(model))
+
+    @PostMapping("list")
+    @PreAuthorize("isAuthenticated()")
+    fun getList(@RequestBody model: SubjectListRequestModel) = ok(subjectService.getSubjectListByIds(model))
+
+    @GetMapping("list")
+    @PreAuthorize("isAuthenticated()")
+    fun getList() = ok(subjectService.getSubjectList())
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")

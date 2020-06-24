@@ -13,4 +13,6 @@ interface LessonsThemesRepository : CrudRepository<LessonsThemesEntity, LessonsT
 
     @Query("SELECT e FROM LessonsThemesEntity e WHERE e.lessonsThemesId.lessonId in :lessonIds")
     fun findByLessonIds(@Param("lessonIds") ids: MutableSet<UUID>): MutableSet<LessonsThemesEntity>
+
+    fun findAllByLessonsThemesIdLessonId(id: UUID): MutableSet<LessonsThemesEntity>
 }

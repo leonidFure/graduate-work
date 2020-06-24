@@ -1,6 +1,7 @@
 package com.lgorev.ksuonlineeducation.api
 
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonLogPageRequestModel
+import com.lgorev.ksuonlineeducation.domain.lesson.LessonRequestListModel
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonRequestModel
 import com.lgorev.ksuonlineeducation.domain.lesson.LessonRequestPageModel
 import com.lgorev.ksuonlineeducation.service.LessonLogService
@@ -21,6 +22,10 @@ class LessonController(private val lessonService: LessonService,
     @PostMapping("page")
     @PreAuthorize("isAuthenticated()")
     fun getPage(@RequestBody model: LessonRequestPageModel) = ok(lessonService.getLessonPage(model))
+
+    @PostMapping("list")
+    @PreAuthorize("isAuthenticated()")
+    fun getList(@RequestBody model: LessonRequestListModel) = ok(lessonService.getLessonList(model))
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")

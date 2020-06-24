@@ -1,8 +1,8 @@
-package com.lgorev.ksuonlineeducation.repository.teacher
+package com.lgorev.ksuonlineeducation.repository.file
 
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface TeacherRepository: CrudRepository<TeacherEntity, UUID>
+interface FileRepository: CrudRepository<FileEntity, UUID>, FilePagingRepository

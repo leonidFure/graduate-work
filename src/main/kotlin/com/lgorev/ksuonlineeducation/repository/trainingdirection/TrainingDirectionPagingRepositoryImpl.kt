@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.repository.trainingdirection
 
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
 import com.lgorev.ksuonlineeducation.domain.trainingdirection.TrainingDirectionPageRequestModel
 import com.lgorev.ksuonlineeducation.repository.subject.SubjectEntity
 import org.springframework.data.domain.Page
@@ -15,11 +16,12 @@ class TrainingDirectionPagingRepositoryImpl(@PersistenceContext private val em: 
     private val trainingDirection = TrainingDirectionEntity::class.java
 
 
-    override fun findPage(model: TrainingDirectionPageRequestModel, ids: MutableSet<UUID>?): Page<TrainingDirectionEntity> {
+    override fun findPage(model: TrainingDirectionPageRequestModel, ids: MutableSet<UUID>?): PageResponseModel<TrainingDirectionEntity> {
         val cb = em.criteriaBuilder
 
         val cq = cb.createQuery(trainingDirection)
         val root = cq.from(trainingDirection)
+        val countQuery = cb.createQuery(Long::class.java)
 
         val predicates = mutableSetOf<Predicate>()
         if(ids != null) predicates.add(root.get<UUID>("id").`in`(ids))
@@ -35,10 +37,15 @@ class TrainingDirectionPagingRepositoryImpl(@PersistenceContext private val em: 
         else
             cq.orderBy(cb.asc(root.get<String>("name")))
 
+        countQuery.select(cb.count(countQuery.from(trainingDirection)))
+        countQuery.where(cb.and(*predicates.toTypedArray()))
         val typedQuery = em.createQuery(cq)
-        typedQuery.firstResult = (model.pageNum) * model.pageSize
+        typedQuery.firstResult = (model.pageNum - 1) * model.pageSize
         typedQuery.maxResults = model.pageSize
 
-        return PageImpl<TrainingDirectionEntity>(typedQuery.resultList)
+        val query = em.createQuery(countQuery)
+        val count = query.singleResult
+        val resultList = typedQuery.resultList
+        return PageResponseModel(resultList.toMutableSet(), count ?: 0)
     }
 }

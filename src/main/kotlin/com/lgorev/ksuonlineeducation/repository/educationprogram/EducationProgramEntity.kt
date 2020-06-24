@@ -2,6 +2,7 @@ package com.lgorev.ksuonlineeducation.repository.educationprogram
 
 import com.lgorev.ksuonlineeducation.domain.educationprogram.EducationProgramStatus
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
 
@@ -17,8 +18,8 @@ data class EducationProgramEntity(
         var name: String,
         @Column(name = "description")
         var description: String,
-        @Column(name = "creation_date")
-        var creationDate: LocalDate = LocalDate.now(),
+        @Column(name = "creation_datetime")
+        var creationDateTime: LocalDateTime = LocalDateTime.now(),
         @Column(name = "status")
         @Enumerated(value = EnumType.STRING)
         var status: EducationProgramStatus,

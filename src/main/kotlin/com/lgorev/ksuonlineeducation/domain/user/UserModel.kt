@@ -11,11 +11,11 @@ class UserModel(
         var patronymic: String? = null,
         private var email: String = "",
         private var password: String = "",
-        var roles: MutableList<Role> = mutableListOf()
+        var role: Role
 ) : UserDetails {
 
 
-    override fun getAuthorities() = roles.map { SimpleGrantedAuthority(it.toString()) }
+    override fun getAuthorities() = mutableListOf(role).map { SimpleGrantedAuthority(it.toString()) }
 
     override fun isEnabled() = true
 

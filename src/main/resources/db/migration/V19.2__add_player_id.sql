@@ -1,0 +1,1 @@
+ALTER TABLE live_event ADD COLUMN player_id VARCHAR;

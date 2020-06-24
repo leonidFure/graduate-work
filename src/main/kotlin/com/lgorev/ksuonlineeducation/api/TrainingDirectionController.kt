@@ -24,13 +24,11 @@ class TrainingDirectionController (private val trainingDirectionService: Trainin
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
-    fun add(@RequestBody model: TrainingDirectionRequestModel) =
-            ok(trainingDirectionService.addTrainingDirection(model))
+    fun add(@RequestBody model: TrainingDirectionRequestModel) = trainingDirectionService.addTrainingDirection(model)
 
     @PutMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
-    fun update(@RequestBody model: TrainingDirectionRequestModel) =
-            ok(trainingDirectionService.updateTrainingDirection(model))
+    fun update(@RequestBody model: TrainingDirectionRequestModel) = trainingDirectionService.updateTrainingDirection(model)
 
     @DeleteMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")

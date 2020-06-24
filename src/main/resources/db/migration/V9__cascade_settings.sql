@@ -69,6 +69,6 @@ ALTER TABLE training_direction
     ADD CONSTRAINT training_direction_faculty_id_fkey FOREIGN KEY (faculty_id) REFERENCES faculty (id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE user_roles
-    DROP CONSTRAINT usr_user_roles,
+    DROP CONSTRAINT IF EXISTS usr_user_roles,
     ADD CONSTRAINT usr_user_roles FOREIGN KEY (user_id) REFERENCES usr (id) ON DELETE CASCADE ON UPDATE CASCADE;
 

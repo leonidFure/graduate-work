@@ -1,5 +1,6 @@
 package com.lgorev.ksuonlineeducation.repository.subject
 
+import com.lgorev.ksuonlineeducation.domain.common.PageResponseModel
 import com.lgorev.ksuonlineeducation.domain.subject.SubjectRequestPageModel
 import com.lgorev.ksuonlineeducation.repository.trainingdirection.SubjectsForEntranceEntity
 import org.springframework.data.domain.Page
@@ -8,5 +9,5 @@ import java.util.*
 
 @Repository
 interface SubjectPagingRepository {
-    fun findPage(model: SubjectRequestPageModel, ids: MutableSet<UUID>?): Page<SubjectEntity>
+    fun findPage(model: SubjectRequestPageModel, ids: MutableSet<UUID>?): PageResponseModel<SubjectEntity>
 }
