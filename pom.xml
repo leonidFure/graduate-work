@@ -14,6 +14,7 @@
     <name>ksu-online-education</name>
     <description>Graduate project. Back-end part.</description>
 
+
     <properties>
         <java.version>14</java.version>
         <kotlin.version>1.3.72</kotlin.version>
@@ -126,7 +127,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-jpamodelgen</artifactId>
